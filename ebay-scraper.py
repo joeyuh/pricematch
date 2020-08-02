@@ -20,7 +20,7 @@ html_str = webscraper.scrape_page('https://www.ebay.com/sch/i.html?_from=R40&_nk
 pattern = re.compile(r'href=".+">\n\s+<h3\sclass="s-item__title">\s+.+\n\s+</h3>\n\s*.*\n\s*.*\n\s*.*SECONDARY_INFO">\n\s+.+\n')
 matches = pattern.findall(html_str)
 
-for match in matches[:3]:
+for match in matches:
     matched_parts = match.split('\n')
     url = matched_parts[0][6:-2]
     ##print(url)
