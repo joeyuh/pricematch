@@ -15,6 +15,7 @@ class Listing:
 
 
 s = requests.Session()
+#searches broken z170 motherboards on ebay
 source = s.get('https://www.ebay.com/sch/i.html?_from=R40&_nkw=z170&_sacat=0&LH_TitleDesc=0&LH_ItemCondition=7000&_sop=1').text
 soup = BeautifulSoup(source, 'lxml')
 html_str = soup.prettify()
@@ -90,7 +91,6 @@ for match in listing_results:
 
     #Find image URLs.
     #Create a set with URLs.
-    image_urls = {'0'}
     #Find the first big image.
     pattern = re.compile(r'image"\ssrc="(.+)"\ss')
     matches = pattern.findall(page_html)
@@ -108,11 +108,7 @@ for match in listing_results:
             pass
         else:
             print(full_size_thumbnail_url)
-            image_urls.add(full_size_thumbnail_url)
 
-    with open(f'./temp1/{listings_found}.txt', 'a') as f:
-        for image_position in range(len(image_urls)-1):
-            f.write(image_urls[image_position])
 
     #create instance of class Listing, starting with name listing1 for instance and so forth, and print attributes of instance
     instance_title = 'listing' + str(listings_found)
