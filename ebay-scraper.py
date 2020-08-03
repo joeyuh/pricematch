@@ -2,17 +2,7 @@ import re
 import requests
 import lxml.html
 from bs4 import BeautifulSoup
-
-class Listing:
-    def __init__(self, Title, URL, Condition, Price, Shipping=0.00, Best_Offer=False, Auction=False,):
-        self.Title = Title
-        self.URL = URL
-        self.Condition = Condition
-        self.Price = Price
-        self.Best_Offer = Best_Offer
-        self.Auction = Auction
-        self.Shipping = Shipping
-
+import listing
 
 s = requests.Session()
 #searches broken z170 motherboards on ebay
@@ -112,7 +102,7 @@ for match in listing_results:
 
     #create instance of class Listing, starting with name listing1 for instance and so forth, and print attributes of instance
     instance_title = 'listing' + str(listings_found)
-    instance_title = Listing(listing_title, url, item_condition, item_price, shipping_cost, best_offer, auction_)
+    instance_title = listing.Listing(listing_title, url, item_condition, item_price, shipping_cost, best_offer, auction_)
     print(instance_title.__dict__)
     
     print('\n')
