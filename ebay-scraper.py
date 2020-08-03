@@ -26,7 +26,7 @@ pattern = re.compile(r'href=".+">\n\s+<h3\sclass="s-item__title">\s+.+\n\s+</h3>
 listing_results = pattern.findall(html_str)
 
 listings_found = 1
-for match in listing_results[:1]:
+for match in listing_results:
     matched_parts = match.split('\n')
     url = matched_parts[0][6:-2]
     ##print(url)
@@ -81,18 +81,38 @@ for match in listing_results[:1]:
         #going to the desc_url and getting the HTML data for the page
         r = s.get(desc_url)
         desc_html = r.text
-        #searching for the actual description inside the desc_html:
+        #searching for the actual description inside the desc_html. This only works when the description is completely unformatted, so doesn't work often.
         pattern = re.compile(r'ds_div">\n\s+(.+)\s</div>')
         matches = pattern.findall(desc_html)
         for match in matches:
-            print(match)
+            ##print(match)
+            pass
 
-    #Images
+    #Find image URLs.
+    #Create a set with URLs.
+    image_urls = {'0'}
+    #Find the first big image.
+    pattern = re.compile(r'image"\ssrc="(.+)"\ss')
+    matches = pattern.findall(page_html)
+    for match in matches[:-1]:
+        match = match.replace('300', '1000')
+        print(match)
+        big_image = match
+    #Find the small images (thumbanails).
+    pattern = re.compile(r'img\ssrc="(.+)"\sstyle')
+    matches = pattern.findall(page_html)
+    for match in matches:
+        full_size_thumbnail_url = match.replace('64', '1000')
+        #making sure we don't get the big image and the same thumbnail
+        if big_image == full_size_thumbnail_url:
+            pass
+        else:
+            print(full_size_thumbnail_url)
+            image_urls.add(full_size_thumbnail_url)
 
-
-
-
-
+    with open(f'./temp1/{listings_found}.txt', 'a') as f:
+        for image_position in range(len(image_urls)-1):
+            f.write(image_urls[image_position])
 
     #create instance of class Listing, starting with name listing1 for instance and so forth, and print attributes of instance
     instance_title = 'listing' + str(listings_found)
