@@ -1,26 +1,32 @@
-import webscraper
 import re
 import requests
+import lxml.html
+from bs4 import BeautifulSoup
 
 class Listing:
-    def __init__(self, Title, URL, Condition, Price, Best_Offer=False, Auction=False):
+    def __init__(self, Title, URL, Condition, Price, Shipping=0.00, Best_Offer=False, Auction=False,):
         self.Title = Title
         self.URL = URL
         self.Condition = Condition
         self.Price = Price
         self.Best_Offer = Best_Offer
         self.Auction = Auction
+        self.Shipping = Shipping
 
-#Uses the webscraper module to get the HTML data for the eBay search page, in this case for broken Z170 motherboards
-html_str = webscraper.scrape_page('https://www.ebay.com/sch/i.html?_from=R40&_nkw=z170&_sacat=0&LH_TitleDesc=0&LH_ItemCondition=7000&_sop=1')
+
+s = requests.Session()
+source = s.get('https://www.ebay.com/sch/i.html?_from=R40&_nkw=z170&_sacat=0&LH_TitleDesc=0&LH_ItemCondition=7000&_sop=1').text
+soup = BeautifulSoup(source, 'lxml')
+html_str = soup.prettify()
 
 
 #Using regex to search for links to listings, titles, and item condition in the HTML. 
 #Split method and stuff is used to separate link, titles, and item condition from other useless things.
 pattern = re.compile(r'href=".+">\n\s+<h3\sclass="s-item__title">\s+.+\n\s+</h3>\n\s*.*\n\s*.*\n\s*.*SECONDARY_INFO">\n\s+.+\n')
-matches = pattern.findall(html_str)
+listing_results = pattern.findall(html_str)
 
-for match in matches:
+listings_found = 1
+for match in listing_results[:1]:
     matched_parts = match.split('\n')
     url = matched_parts[0][6:-2]
     ##print(url)
@@ -30,9 +36,12 @@ for match in matches:
     ##print(item_condition)
     
     #GOING INTO THE PAGE FOR EACH LISTING, AWAY FROM SEARCH RESULTS PAGE
-    s = requests.Session()
     r = s.get(str(url))
     page_html = r.text
+
+    #FOR TESTING PURPOSES ONLY
+    with open('temp1.html', 'a') as f:
+        f.write(page_html)
 
     #find price on page
     pattern = re.compile(r'>US\s\$\d+\.\d\d')
@@ -52,9 +61,42 @@ for match in matches:
     if "Current bid" in page_html:
         auction_ = True
 
+    #Free Shipping? If no, how much?
+    pattern = re.compile(r'fshippingCost.+\n\s+<span>(FREE|\$\d+\.\d+)')
+    matches = pattern.findall(page_html)
+     #the findall will only find things in the group, so it will only return FREE or $xx.xx.
+    for match in matches:
+        if match == 'FREE':
+            shipping_cost = r'$0.00'
+        else:
+            shipping_cost = match
+    
+    #Description. Description on ebay listings is another webpage. First we find the link to this webpage:
+    pattern = re.compile(r'src=".+"\stitle="S')
+    matches = pattern.findall(page_html)
+    for match in matches:
+        #separate the URL from other useless things in the search result
+        match = match.split('" ')
+        desc_url = match[0][5:]
+        #going to the desc_url and getting the HTML data for the page
+        r = s.get(desc_url)
+        desc_html = r.text
+        #searching for the actual description inside the desc_html:
+        pattern = re.compile(r'ds_div">\n\s+(.+)\s</div>')
+        matches = pattern.findall(desc_html)
+        for match in matches:
+            print(match)
+
+    #Images
+
+
+
+
+
+
     #create instance of class Listing, starting with name listing1 for instance and so forth, and print attributes of instance
     instance_title = 'listing' + str(listings_found)
-    instance_title = Listing(listing_title, url, item_condition, item_price, best_offer, auction_)
+    instance_title = Listing(listing_title, url, item_condition, item_price, shipping_cost, best_offer, auction_)
     print(instance_title.__dict__)
     
     print('\n')
