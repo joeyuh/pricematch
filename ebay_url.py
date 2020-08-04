@@ -3,12 +3,11 @@ import re
 from bs4 import BeautifulSoup
 
 
-def get_listing_urls(searchterm):
+def get_listing_urls(s: requests.Session, searchterm):
     splitted_searchterm = searchterm.split(' ')
 
     urls = []
     html_data = ""
-    s = requests.Session()
     final_search_query = ""
     if len(splitted_searchterm) == 1:
         query_url = f'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.X{splitted_searchterm[0]}.TRS0&_nkw={splitted_searchterm[0]}&_sacat=0&_ipg=200&_pgn='

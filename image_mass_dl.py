@@ -21,7 +21,7 @@ def load():
 
 
 # Copied from ebay_scrap.py CURRENTLY PRINTING URL ONLY
-def download(url):
+def download(s: requests.Session,url):
     s = requests.Session()
     page_html = s.get(url).text
     pattern = re.compile(r'image"\ssrc="(.+)"\ss')
@@ -43,7 +43,8 @@ def download(url):
 
 
 if __name__ == "__main__":
+    s = requests.Session()
     for term in search_terms:
-        res = ebay_url.get_listing_urls(term)
+        res = ebay_url.get_listing_urls(s,term)
         for url in res:
-            download(url)
+            download(s,url)
