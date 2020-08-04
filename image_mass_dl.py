@@ -10,7 +10,8 @@ total_fetched = 0
 listing_set = set()
 search_terms = ['lga 1151 motherboard', 'lga 1150 motherboard', 'lga 1155 motherboard', 'z68 motherboard',
                 'z77 motherboard', 'z87 motherboard', 'z97 motherboard', 'z170 motherboard', 'z270 motherboard',
-                'z370 motherboard', 'z390 motherboard', 'z490 motherboard']
+                'z370 motherboard', 'z390 motherboard', 'z490 motherboard', 'h61 motherboard', 'h81 motherboard',
+                'h97 motherboard', 'h110 motherboard', 'h170 motherboard', 'h310 motherboard']
 
 
 def load():
