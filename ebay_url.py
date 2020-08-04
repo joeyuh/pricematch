@@ -71,6 +71,8 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
                 final_search_query += '&_sop=1'
             elif sort_listings == 'lowest':
                 final_search_query += '&_sop=15'
+            else:
+                final_search_query = query_url[0] + query_url[1] + query_url[2]
 
     i = 1
     while True:
