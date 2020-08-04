@@ -8,10 +8,15 @@ import sys
 
 total_fetched = 0
 listing_set = set()
-search_terms = ['lga 1151 motherboard', 'lga 1150 motherboard', 'lga 1155 motherboard', 'z68 motherboard',
-                'z77 motherboard', 'z87 motherboard', 'z97 motherboard', 'z170 motherboard', 'z270 motherboard',
-                'z370 motherboard', 'z390 motherboard', 'z490 motherboard', 'h61 motherboard', 'h81 motherboard',
-                'h97 motherboard', 'h110 motherboard', 'h170 motherboard', 'h310 motherboard']
+search_terms = ['lga 1151 motherboard', 'lga 1150 motherboard', 'lga 1155 motherboard', 'lga1156 motherboard',
+                'z68 motherboard', 'z75 motherboard', 'z77 motherboard', 'z87 motherboard', 'z97 motherboard',
+                'z170 motherboard', 'z270 motherboard',
+                'z370 motherboard', 'z390 motherboard', 'z490 motherboard', 'h55 motherboard', 'h61 motherboard',
+                'h67 motherboard', 'h77 motherboard' 'h81 motherboard', 'h87 motherboard',
+                'h97 motherboard', 'h110 motherboard', 'h170 motherboard', 'h310 motherboard', 'h270 motherboard',
+                'h370 motherboard', 'h410 motherboard',
+                'b360 motherboard', 'b150 motherboard', 'b250 motherboard', 'b365 motherboard', 'b460 motherboard',
+                'b85 motherboard', 'b75 motherboard', 'h67 motherboard', 'p67 motherboard']
 
 
 def load():
