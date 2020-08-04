@@ -58,7 +58,7 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
 
     i = 1
     while True:
-        # print(final_search_query)
+        # print(final_search_query + f'&_pgn={i}')
         html_data = s.get(final_search_query + f'&_pgn={i}').text
 
         source = html_data
@@ -85,7 +85,7 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
             else:
                 pass
         except IndexError:
-            continue
+            break
         i += 1
 
     return urls
