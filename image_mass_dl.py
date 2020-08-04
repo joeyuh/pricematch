@@ -4,11 +4,14 @@ import listing
 import pickle
 import os
 import ebay_url
+import sys
 
+total_fetched = 0
 listing_set = set()
 search_terms = ['lga 1151 motherboard', 'lga 1150 motherboard', 'lga 1155 motherboard', 'z68 motherboard',
                 'z77 motherboard', 'z87 motherboard', 'z97 motherboard', 'z170 motherboard', 'z270 motherboard',
                 'z370 motherboard', 'z390 motherboard', 'z490 motherboard']
+
 
 # Not in use currently, reserved
 def load():
@@ -21,15 +24,20 @@ def load():
 
 
 # Copied from ebay_scrap.py CURRENTLY PRINTING URL ONLY
-def download(s: requests.Session,url):
+def download(s: requests.Session, url):
+    global total_fetched
     s = requests.Session()
     page_html = s.get(url).text
     pattern = re.compile(r'image"\ssrc="(.+)"\ss')
     matches = pattern.findall(page_html)
     for match in matches[:-1]:
         match = match.replace('300', '1000')
-        print(match)
+        # print(match)
+        listing_set.add(match)
         big_image = match
+        total_fetched += 1
+        sys.stdout.write("\rFetched %i" % total_fetched)
+        sys.stdout.flush()
     # Find the small images (thumbanails).
     pattern = re.compile(r'img\ssrc="(.+)"\sstyle')
     matches = pattern.findall(page_html)
@@ -39,12 +47,16 @@ def download(s: requests.Session,url):
         if big_image == full_size_thumbnail_url:
             pass
         else:
-            print(full_size_thumbnail_url)
+            # print(full_size_thumbnail_url)
+            listing_set.add(full_size_thumbnail_url)
+            total_fetched += 1
+            sys.stdout.write("\rFetched %i" % total_fetched)
 
 
 if __name__ == "__main__":
     s = requests.Session()
+    load()
     for term in search_terms:
-        res = ebay_url.get_listing_urls(s,term)
+        res = ebay_url.get_listing_urls(s, term, item_condition="parts")
         for url in res:
-            download(s,url)
+            download(s, url)
