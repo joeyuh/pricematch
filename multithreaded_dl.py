@@ -16,7 +16,7 @@ def download(url):
         file_name = re.match(r'.*/.*/(.*)/.*', url).group(1)
         with open(f'{file_name}.jpg', 'wb') as img:
             for chunk in get.iter_content(chunk_size=1024):
-                f.write(chunk)
+                img.write(chunk)
     else:
         print(f'Error Code {get.status_code}')
 
