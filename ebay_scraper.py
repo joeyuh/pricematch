@@ -6,8 +6,7 @@ import listing
 
 s = requests.Session()
 # searches broken z170 motherboards on ebay
-source = s.get(
-    'https://www.ebay.com/sch/i.html?_from=R40&_nkw=z170&_sacat=0&LH_TitleDesc=0&LH_ItemCondition=7000&_sop=1').text
+source = s.get('https://www.ebay.com/sch/i.html?_from=R40&_nkw=z170&_sacat=0&LH_TitleDesc=0&LH_ItemCondition=7000&_sop=1').text
 soup = BeautifulSoup(source, 'lxml')
 html_str = soup.prettify()
 
