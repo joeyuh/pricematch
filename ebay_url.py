@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 
 
-def get_listing_urls(s: requests.Session, searchterm):
+def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_listings=None):
     splitted_searchterm = searchterm.split(' ')
 
     urls = []
@@ -20,7 +20,24 @@ def get_listing_urls(s: requests.Session, searchterm):
 
     if len(splitted_searchterm) == 1:
         query_url = f'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.X{splitted_searchterm[0]}.TRS0&_nkw={splitted_searchterm[0]}&_sacat=0&_ipg=200'
-        final_search_query = query_url # + '&LH_ItemCondition=7000' + '&_sop=10'
+        if item_condition != None:
+            if item_condition == 'parts':
+                final_search_query = query_url  + '&LH_ItemCondition=7000'
+            elif item_condition == 'used':
+                final_search_query = query_url  + '&LH_ItemCondition=3000'
+            elif item_condition == 'new':
+                final_search_query = query_url  + '&LH_ItemCondition=1000'
+        if sort_listings != None:
+            if sort_listings == 'newest':
+                final_search_query = query_url  + '&_sop=10'
+            elif sort_listings == 'best':
+                final_search_query = query_url  + '&_sop=12'
+            elif sort_listings == 'soonest':
+                final_search_query = query_url  + '&_sop=1'
+            elif sort_listings == 'lowest':
+                final_search_query = query_url  + '&_sop=15'
+        else:
+            final_search_query = query_url
     elif len(splitted_searchterm) > 1:
         query_url = 'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.X.TRS0&_nkw=&_sacat=0&_ipg=200'
         query_url = query_url.split('.TRS')
@@ -37,7 +54,23 @@ def get_listing_urls(s: requests.Session, searchterm):
         query_url[0] += f'{splitted_searchterm[-1]}'
         query_url[1] += f'{splitted_searchterm[-1]}'
 
-        final_search_query = query_url[0] + query_url[1] + query_url[2] # + '&LH_ItemCondition=7000' + '&_sop=10'
+        final_search_query = query_url[0] + query_url[1] + query_url[2]
+        if item_condition != None:
+            if item_condition == 'parts':
+                final_search_query += '&LH_ItemCondition=7000'
+            elif item_condition == 'used':
+                final_search_query += '&LH_ItemCondition=3000'
+            elif item_condition == 'new':
+                final_search_query += '&LH_ItemCondition=1000'
+        if sort_listings != None:
+            if sort_listings == 'newest':
+                final_search_query += '&_sop=10'
+            elif sort_listings == 'best':
+                final_search_query += '&_sop=12'
+            elif sort_listings == 'soonest':
+                final_search_query += '&_sop=1'
+            elif sort_listings == 'lowest':
+                final_search_query += '&_sop=15'
 
     i = 1
     while True:
@@ -61,5 +94,7 @@ def get_listing_urls(s: requests.Session, searchterm):
         listing_results = pattern.findall(source)
         if 'disabled' in listing_results[0]:
             break
+        else:
+            pass
         i += 1
-    return urls
+    return(urls)
