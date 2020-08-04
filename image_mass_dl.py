@@ -13,19 +13,26 @@ search_terms = ['lga 1151 motherboard', 'lga 1150 motherboard', 'lga 1155 mother
                 'z370 motherboard', 'z390 motherboard', 'z490 motherboard']
 
 
-# Not in use currently, reserved
 def load():
-    if os.path.exists(r'.\MassDL\set.dat'):
-        with open(r'.\MassDL\set.dat', 'rb') as set_file:
+    global listing_set
+    if os.path.exists(r'set.dat'):
+        with open(r'set.dat', 'rb') as set_file:
             listing_set = pickle.load(set_file)
             print(f'Loaded {len(listing_set)} from saved file')
     else:
         print('File not found, proceeding with empty set.')
 
 
+def save():
+    global listing_set
+    with open(r'set.dat', 'wb') as set_file:
+        pickle.dump(listing_set, set_file)
+
+
 # Copied from ebay_scrap.py CURRENTLY PRINTING URL ONLY
 def download(s: requests.Session, url):
     global total_fetched
+    global listing_set
     s = requests.Session()
     page_html = s.get(url).text
     pattern = re.compile(r'image"\ssrc="(.+)"\ss')
@@ -60,3 +67,4 @@ if __name__ == "__main__":
         res = ebay_url.get_listing_urls(s, term, item_condition="parts")
         for url in res:
             download(s, url)
+            save()
