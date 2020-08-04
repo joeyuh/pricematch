@@ -69,8 +69,12 @@ def download(s: requests.Session, url):
 if __name__ == "__main__":
     s = requests.Session()
     load()
-    for term in search_terms:
-        res = ebay_url.get_listing_urls(s, term, item_condition="parts")
-        for url in res:
-            download(s, url)
-            save()
+    inp = input("Type y to continue, n to cancel:")
+    if inp == 'n':
+        exit(0)
+    elif inp == 'y':
+        for term in search_terms:
+            res = ebay_url.get_listing_urls(s, term, item_condition="parts")
+            for url in res:
+                download(s, url)
+                save()
