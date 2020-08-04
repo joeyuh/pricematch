@@ -66,7 +66,7 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
         source = soup.prettify()
 
         pattern = re.compile(
-            r'href=".+">\n\s+<h3\sclass="s-item__title">\s+.+\n\s+</h3>\n\s*.*\n\s*.*\n\s*.*SECONDARY_INFO">\n\s+.+\n')
+            r'href=".+">\n\s+<h3\sclass="s-item')
         listing_results = pattern.findall(source)
 
         for match in listing_results:
