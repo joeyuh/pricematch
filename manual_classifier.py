@@ -10,7 +10,7 @@ import shutil
 import pickle
 
 # list_of_imgs = []
-index = 0
+index = 1
 root = tk.Tk()
 panel = tk.Label(root)
 socket_path = Path("socket")
@@ -46,6 +46,7 @@ def next_img():
         img = ImageTk.PhotoImage(Image.open(f'{index}.jpg'))
         panel.config(image=img)
         panel.image = img
+        root.title(f'{index}.jpg')
         panel.pack(side="bottom", fill="both", expand="yes")
     else:
         print("Not found or reached the end!")
@@ -78,7 +79,7 @@ if __name__ == "__main__":
     #    i+=1
     #    os.rename(f,f'{i}.jpg')
 
-    root.title("Bruh")
+    root.title(f'{index}.jpg')
     root.resizable(False, False)
     root.bind("<KeyPress>", on_press)
     img = ImageTk.PhotoImage(Image.open(f'{index}.jpg'))
