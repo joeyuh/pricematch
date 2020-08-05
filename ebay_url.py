@@ -17,6 +17,7 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
     # Best Match: +'&_sop=12'
     # Ending Soonest: +'&_sop=1'
     # Sort Price+Shipping Low to High: +'&_sop=15'
+    # Sold/Completed listings: +'&LH_Sold=1&LH_Complete=1'
 
     if len(splitted_searchterm) == 1:
         query_url = f'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.X{splitted_searchterm[0]}.TRS0&_nkw={splitted_searchterm[0]}&_sacat=0&_ipg=200'
@@ -55,6 +56,8 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
             final_search_query += '&_sop=1'
         elif sort_listings == 'lowest':
             final_search_query += '&_sop=15'
+        elif sort_listings == 'sold':
+            final_search_query += '&LH_Sold=1&LH_Complete=1'
 
     i = 1
     while True:
