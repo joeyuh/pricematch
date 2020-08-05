@@ -67,28 +67,30 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
         source = html_data
         soup = BeautifulSoup(source, 'lxml')
         source = soup.prettify()
+        if sort_listings == 'sold':
+            pass
+        else:
+            pattern = re.compile(
+                r'href=".+">\n\s+<h3\sclass="s-item')
+            listing_results = pattern.findall(source)
 
-        pattern = re.compile(
-            r'href=".+">\n\s+<h3\sclass="s-item')
-        listing_results = pattern.findall(source)
+            for match in listing_results:
+                matched_parts = match.split('\n')
+                url = matched_parts[0][6:-2]
+                urls.append(url)
+            # with open("1.txt", "w") as f:
+                # f.write(source)
+            # detect if the next paged button is disabled
+            pattern = re.compile(r'<a _sp=".+".*aria-label="Next page"')
+            listing_results = pattern.findall(source)
 
-        for match in listing_results:
-            matched_parts = match.split('\n')
-            url = matched_parts[0][6:-2]
-            urls.append(url)
-        # with open("1.txt", "w") as f:
-            # f.write(source)
-        # detect if the next paged button is disabled
-        pattern = re.compile(r'<a _sp=".+".*aria-label="Next page"')
-        listing_results = pattern.findall(source)
-
-        try:
-            if 'disabled' in listing_results[0]:
+            try:
+                if 'disabled' in listing_results[0]:
+                    break
+                else:
+                    pass
+            except IndexError:
                 break
-            else:
-                pass
-        except IndexError:
-            break
-        i += 1
+            i += 1
 
     return urls
