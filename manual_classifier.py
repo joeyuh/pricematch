@@ -1,3 +1,7 @@
+# This is for manually selecting the type of the image (If it's a socket or not)
+# This is meant to run under a directory with 1.jpg to n.jpg
+# This is for TensorFlow classification
+
 import os
 from PIL import ImageTk, Image
 from pathlib import Path
@@ -5,7 +9,7 @@ import tkinter as tk
 import shutil
 import pickle
 
-list_of_imgs = []
+# list_of_imgs = []
 index = 0
 root = tk.Tk()
 panel = tk.Label(root)
@@ -28,7 +32,7 @@ def save():
 
 
 def classify(socket: bool):
-    current = Path(list_of_imgs[index])
+    current = Path(f'{index}.jpg')
     if socket == True:
         shutil.copy2(current, socket_path)
     else:
@@ -38,10 +42,14 @@ def classify(socket: bool):
 def next_img():
     global index
     index += 1
-    img = ImageTk.PhotoImage(Image.open(list_of_imgs[index]))
-    panel.config(image=img)
-    panel.image = img
-    panel.pack(side="bottom", fill="both", expand="yes")
+    if os.path.exists(f'{index}.jpg'):
+        img = ImageTk.PhotoImage(Image.open(f'{index}.jpg'))
+        panel.config(image=img)
+        panel.image = img
+        panel.pack(side="bottom", fill="both", expand="yes")
+    else:
+        print("Not found or reached the end!")
+        exit(0)
 
 
 def on_press(key):
@@ -59,13 +67,21 @@ def on_press(key):
 
 if __name__ == "__main__":
     load()
-    for filename in os.listdir(os.getcwd()):
-        if ".jpg" in filename:
-            list_of_imgs.append(filename)
+
+    # Old method and debug commented out here
+    # for filename in os.listdir(os.getcwd()):
+    #     if ".jpg" in filename:
+    #         list_of_imgs.append(filename)
+    #
+    # i=0
+    # for f in list_of_imgs:
+    #    i+=1
+    #    os.rename(f,f'{i}.jpg')
+
     root.title("Bruh")
     root.resizable(False, False)
     root.bind("<KeyPress>", on_press)
-    img = ImageTk.PhotoImage(Image.open(list_of_imgs[index]))
+    img = ImageTk.PhotoImage(Image.open(f'{index}.jpg'))
     panel.config(image=img)
     panel.pack(side="bottom", fill="both", expand="yes")
     tk.mainloop()
