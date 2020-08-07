@@ -3,6 +3,7 @@ import requests
 import lxml.html
 from bs4 import BeautifulSoup
 import listing
+import sendemail
 
 s = requests.Session()
 # searches broken z170 motherboards on ebay
@@ -17,7 +18,7 @@ pattern = re.compile(
 listing_results = pattern.findall(html_str)
 
 listings_found = 1
-for match in listing_results:
+for match in listing_results[:1]:
     matched_parts = match.split('\n')
     url = matched_parts[0][6:-2]
     ##print(url)
@@ -86,8 +87,8 @@ for match in listing_results:
     matches = pattern.findall(page_html)
     for match in matches[:-1]:
         match = match.replace('300', '1000')
-        print(match)
         big_image = match
+        print(big_image)
     # Find the small images (thumbanails).
     pattern = re.compile(r'img\ssrc="(.+)"\sstyle')
     matches = pattern.findall(page_html)
@@ -104,5 +105,16 @@ for match in listing_results:
     instance_title = listing.Listing(listing_title, url, item_condition, item_price, shipping_cost, best_offer,
                                      auction_)
     print(instance_title.__dict__)
+    sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient='5214894a@gmail.com', 
+                            message_content=f'''
+Link: {instance_title.URL}
+
+Condition: {instance_title.Condition}
+Price: {instance_title.Price}
+Shipping: {instance_title.Shipping}
+Auction: {instance_title.Auction}
+Best Offer: {instance_title.Best_Offer}''')
 
     print('\n')
+
+
