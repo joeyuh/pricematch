@@ -99,4 +99,4 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
 
 #test use only
 #s = requests.Session()
-#print(get_listing_urls(s, 'Z170 Motherboard', item_condition=None, sort_listings=None))
+#print(get_listing_urls(s, 'z77 motherboard', item_condition='parts', sort_listings='newest'))

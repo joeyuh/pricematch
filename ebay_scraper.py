@@ -28,9 +28,9 @@ html_template = \
 img_template = '<p><img src="{0}" alt="" /></p>\n'
 
 s = requests.Session()
-# searches broken z270 motherboards on ebay
+# searches broken z77 motherboards on ebay
 source = s.get(
-    'https://www.ebay.com/sch/i.html?_from=R40&_nkw=z270&_sacat=0&LH_TitleDesc=0&LH_ItemCondition=7000&_sop=1').text
+    'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.X.TRSz77+motherboard0&_nkw=z77+motherboard&_sacat=0&_ipg=200&LH_PrefLoc=1&LH_ItemCondition=7000&_sop=10').text
 soup = BeautifulSoup(source, 'lxml')
 html_str = soup.prettify()
 
