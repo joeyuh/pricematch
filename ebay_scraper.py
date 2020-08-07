@@ -5,9 +5,32 @@ from bs4 import BeautifulSoup
 import listing
 import sendemail
 
+html_template = \
+    '''
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+</head>
+<body>
+<h1 style="text-align: center;"><strong>{0}</strong></h1>
+<pre>URL {1}</pre>
+<pre>Condition: {2}</pre>
+<pre>Price: {3}</pre>
+<pre>Shipping: {4}</pre>
+<pre>Auction: {5}</pre>
+<pre>Best Offer: {6}</pre>
+<pre>Image:</pre>
+{7}
+</body>
+</html>
+    '''
+img_template = '<p><img src="{0}" alt="" /></p>\n'
+
 s = requests.Session()
 # searches broken z170 motherboards on ebay
-source = s.get('https://www.ebay.com/sch/i.html?_from=R40&_nkw=z170&_sacat=0&LH_TitleDesc=0&LH_ItemCondition=7000&_sop=1').text
+source = s.get(
+    'https://www.ebay.com/sch/i.html?_from=R40&_nkw=z270&_sacat=0&LH_TitleDesc=0&LH_ItemCondition=7000&_sop=1').text
 soup = BeautifulSoup(source, 'lxml')
 html_str = soup.prettify()
 
@@ -83,12 +106,14 @@ for match in listing_results[:1]:
     # Find image URLs.
     # Create a set with URLs.
     # Find the first big image.
+    image_str = ""
     pattern = re.compile(r'image"\ssrc="(.+)"\ss')
     matches = pattern.findall(page_html)
     for match in matches[:-1]:
         match = match.replace('300', '1000')
         big_image = match
-        print(big_image)
+        # print(big_image)
+        image_str += img_template.format(big_image)
     # Find the small images (thumbanails).
     pattern = re.compile(r'img\ssrc="(.+)"\sstyle')
     matches = pattern.findall(page_html)
@@ -98,23 +123,32 @@ for match in listing_results[:1]:
         if big_image == full_size_thumbnail_url:
             pass
         else:
-            print(full_size_thumbnail_url)
+            # print(full_size_thumbnail_url)
+            image_str += img_template.format(full_size_thumbnail_url)
 
     # create instance of class Listing, starting with name listing1 for instance and so forth, and print attributes of instance
     instance_title = 'listing' + str(listings_found)
     instance_title = listing.Listing(listing_title, url, item_condition, item_price, shipping_cost, best_offer,
                                      auction_)
     print(instance_title.__dict__)
-    sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient='5214894a@gmail.com', 
-                            message_content=f'''
+
+    html=html_template.format(instance_title.Title, instance_title.URL,
+                                                                              instance_title.Condition,
+                                                                              instance_title.Price,
+                                                                              instance_title.Shipping,
+                                                                              instance_title.Auction,
+                                                                              instance_title.Best_Offer,image_str)
+    print(html)
+    print(image_str)
+
+    sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient='grandpajoe278@gmail.com',
+                            text_content=f'''
 Link: {instance_title.URL}
 
 Condition: {instance_title.Condition}
 Price: {instance_title.Price}
 Shipping: {instance_title.Shipping}
 Auction: {instance_title.Auction}
-Best Offer: {instance_title.Best_Offer}''')
+Best Offer: {instance_title.Best_Offer}''', html_content=html)
 
     print('\n')
-
-
