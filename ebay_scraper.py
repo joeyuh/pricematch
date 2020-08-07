@@ -20,7 +20,7 @@ html_template = \
 <pre>Shipping: {4}</pre>
 <pre>Auction: {5}</pre>
 <pre>Best Offer: {6}</pre>
-<pre>Image:</pre>
+<pre>Images:</pre>
 {7}
 </body>
 </html>
@@ -141,7 +141,7 @@ for match in listing_results[:1]:
     print(html)
     print(image_str)
 
-    sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient='grandpajoe278@gmail.com',
+    sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient='5214894a@gmail.com',
                             text_content=f'''
 Link: {instance_title.URL}
 
