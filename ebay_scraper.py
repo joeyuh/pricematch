@@ -28,7 +28,7 @@ html_template = \
 img_template = '<p><img src="{0}" alt="" /></p>\n'
 
 s = requests.Session()
-# searches broken z170 motherboards on ebay
+# searches broken z270 motherboards on ebay
 source = s.get(
     'https://www.ebay.com/sch/i.html?_from=R40&_nkw=z270&_sacat=0&LH_TitleDesc=0&LH_ItemCondition=7000&_sop=1').text
 soup = BeautifulSoup(source, 'lxml')
@@ -41,7 +41,7 @@ pattern = re.compile(
 listing_results = pattern.findall(html_str)
 
 listings_found = 1
-for match in listing_results[:1]:
+for match in listing_results:
     matched_parts = match.split('\n')
     url = matched_parts[0][6:-2]
     ##print(url)
@@ -74,6 +74,8 @@ for match in listing_results[:1]:
     # Auction?
     auction_ = False
     if "Current bid" in page_html:
+        auction_ = True
+    elif "Place bid" in page_html:
         auction_ = True
 
     # Free Shipping? If no, how much?
@@ -132,6 +134,8 @@ for match in listing_results[:1]:
                                      auction_)
     print(instance_title.__dict__)
 
+
+
     html=html_template.format(instance_title.Title, instance_title.URL,
                                                                               instance_title.Condition,
                                                                               instance_title.Price,
@@ -141,14 +145,19 @@ for match in listing_results[:1]:
     print(html)
     print(image_str)
 
-    sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient='5214894a@gmail.com',
-                            text_content=f'''
+    #send an email if price+shipping less than $30 and is not an auction.
+    if float(str(instance_title.Price[1:]))+float(str(instance_title.Shipping[1:]))<=30.00 and str(instance_title.Auction) == "False":  
+        sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient='5214894a@gmail.com',
+                                text_content=f'''
 Link: {instance_title.URL}
 
 Condition: {instance_title.Condition}
 Price: {instance_title.Price}
 Shipping: {instance_title.Shipping}
 Auction: {instance_title.Auction}
-Best Offer: {instance_title.Best_Offer}''', html_content=html)
+Best Offer: {instance_title.Best_Offer}''', 
+        html_content=html)
+
+        print('Sent an email')
 
     print('\n')

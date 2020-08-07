@@ -20,10 +20,10 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
     # Sold/Completed listings: +'&LH_Sold=1&LH_Complete=1'
 
     if len(splitted_searchterm) == 1:
-        query_url = f'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.X{splitted_searchterm[0]}.TRS0&_nkw={splitted_searchterm[0]}&_sacat=0&_ipg=200'
+        query_url = f'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.X{splitted_searchterm[0]}.TRS0&_nkw={splitted_searchterm[0]}&_sacat=0&_ipg=200&LH_PrefLoc=1'
         final_search_query=query_url
     elif len(splitted_searchterm) > 1:
-        query_url = 'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.X.TRS0&_nkw=&_sacat=0&_ipg=200'
+        query_url = 'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.X.TRS0&_nkw=&_sacat=0&_ipg=200&LH_PrefLoc=1'
         query_url = query_url.split('.TRS')
         x = query_url[1].split('nkw=')
         query_url.pop()
@@ -93,4 +93,10 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
                 break
             i += 1
 
+    #test use only
+    #return final_search_query
     return urls
+
+#test use only
+#s = requests.Session()
+#print(get_listing_urls(s, 'Z170 Motherboard', item_condition=None, sort_listings=None))
