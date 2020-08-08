@@ -2,10 +2,11 @@ import re
 import requests
 import lxml.html
 from bs4 import BeautifulSoup
-
+#homemade modules below!
 import listing
 import sendemail
 import ebay_url
+
 
 def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='newest', itemcondition='parts', buyitnow=True):
     html_template = \
