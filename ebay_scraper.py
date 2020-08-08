@@ -2,11 +2,12 @@ import re
 import requests
 import lxml.html
 from bs4 import BeautifulSoup
+
 import listing
 import sendemail
 import ebay_url
 
-def notify_me(recipient, searchterm, sortlistings='newest', sortitems='parts', buyitnow=True, maxprice)
+def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='newest', itemcondition='parts', buyitnow=True):
     html_template = \
         '''
     <!DOCTYPE html>
@@ -30,9 +31,9 @@ def notify_me(recipient, searchterm, sortlistings='newest', sortitems='parts', b
     img_template = '<p><img src="{0}" alt="" /></p>\n'
 
     s = requests.Session()
-    # searches broken z270 motherboards on ebay
-    source = s.get(
-        'https://www.ebay.com/sch/i.html?_from=R40&_nkw=z270&_sacat=0&LH_TitleDesc=0&LH_ItemCondition=7000&_sop=1&LH_PrefLoc=1').text
+    #using ebay_url.py to generate a search results page url
+    searchresultspage_url = ebay_url.get_searchresults_url(s, search_term, item_condition=itemcondition, sort_listings=sortlistings)
+    source = s.get(searchresultspage_url).text
     soup = BeautifulSoup(source, 'lxml')
     html_str = soup.prettify()
 
@@ -144,22 +145,40 @@ def notify_me(recipient, searchterm, sortlistings='newest', sortitems='parts', b
                                                                                 instance_title.Shipping,
                                                                                 instance_title.Auction,
                                                                                 instance_title.Best_Offer,image_str)
-        print(html)
-        print(image_str)
+        #print(html)
+        #print(image_str)
 
-        #send an email if price+shipping less than $30 and is not an auction.
-        if float(str(instance_title.Price[1:]))+float(str(instance_title.Shipping[1:]))<=30.00 and str(instance_title.Auction) == "False":  
-            sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient='xxxx@gmail.com',
-                                    text_content=f'''
-    Link: {instance_title.URL}
+        #Do we want an auction?
+        if buyitnow == True:   
+            #send an email if price+shipping less than maxprice.
+            if float(str(instance_title.Price[1:]))+float(str(instance_title.Shipping[1:])) <= maxprice and str(instance_title.Auction) == "False":  
+                sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
+                                        text_content=f'''
+        Link: {instance_title.URL}
 
-    Condition: {instance_title.Condition}
-    Price: {instance_title.Price}
-    Shipping: {instance_title.Shipping}
-    Auction: {instance_title.Auction}
-    Best Offer: {instance_title.Best_Offer}''', 
-            html_content=html)
+        Condition: {instance_title.Condition}
+        Price: {instance_title.Price}
+        Shipping: {instance_title.Shipping}
+        Auction: {instance_title.Auction}
+        Best Offer: {instance_title.Best_Offer}''', 
+                html_content=html)
 
-            print('Sent an email')
+                print('Sent an email')
+        elif buyitnow == False:
+            if float(str(instance_title.Price[1:]))+float(str(instance_title.Shipping[1:])) <= maxprice and str(instance_title.Auction) == "True":  
+                sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
+                                        text_content=f'''
+        Link: {instance_title.URL}
+
+        Condition: {instance_title.Condition}
+        Price: {instance_title.Price}
+        Shipping: {instance_title.Shipping}
+        Auction: {instance_title.Auction}
+        Best Offer: {instance_title.Best_Offer}''', 
+                html_content=html)
+
+                print('Sent an email')
 
         print('\n')
+
+notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', maxprice=30.00)
