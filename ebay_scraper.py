@@ -2,13 +2,32 @@ import re
 import requests
 import lxml.html
 from bs4 import BeautifulSoup
-#homemade modules below!
+import os
+import pickle
+# homemade modules below!
 import listing
 import sendemail
 import ebay_url
 
 
-def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='newest', itemcondition='parts', buyitnow=True):
+def load(filename) -> set:
+    if os.path.exists(filename):
+        with open(filename, 'rb') as index_file:
+            s = pickle.load(index_file)
+            print(f'Loaded {len(s)} recommended files from saved file')
+        return s
+    else:
+        return set()
+
+
+def save(filename, s: set):
+    with open(filename, 'wb') as f:
+        pickle.dump(s, f)
+
+
+def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='newest', itemcondition='parts',
+              buyitnow=True):
+    recommended: set = load(f'{recipient}.dat')
     html_template = \
         '''
     <!DOCTYPE html>
@@ -32,8 +51,9 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
     img_template = '<p><img src="{0}" alt="" /></p>\n'
 
     s = requests.Session()
-    #using ebay_url.py to generate a search results page url
-    searchresultspage_url = ebay_url.get_searchresults_url(s, search_term, item_condition=itemcondition, sort_listings=sortlistings)
+    # using ebay_url.py to generate a search results page url
+    searchresultspage_url = ebay_url.get_searchresults_url(s, search_term, item_condition=itemcondition,
+                                                           sort_listings=sortlistings)
     source = s.get(searchresultspage_url).text
     soup = BeautifulSoup(source, 'lxml')
     html_str = soup.prettify()
@@ -48,19 +68,22 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
     for match in listing_results:
         matched_parts = match.split('\n')
         url = matched_parts[0][6:-2]
-        ##print(url)
+        # print(url)
         listing_title = matched_parts[2][13:]
-        ##print(listing_title)
+        # print(listing_title)
         item_condition = matched_parts[7][13:]
-        ##print(item_condition)
+        # print(item_condition)
 
         # GOING INTO THE PAGE FOR EACH LISTING, AWAY FROM SEARCH RESULTS PAGE
+        if url in recommended:
+            print("An email was sent before already!")
+            continue  # continue if we already sent a mail about it
         r = s.get(str(url))
         page_html = r.text
 
         # FOR TESTING PURPOSES ONLY
-        #with open('temp1.html', 'a') as f:
-            #f.write(page_html)
+        # with open('temp1.html', 'a') as f:
+        # f.write(page_html)
 
         # find price on page
         pattern = re.compile(r'>US\s\$\d+\.\d\d')
@@ -102,7 +125,8 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
             # going to the desc_url and getting the HTML data for the page
             r = s.get(desc_url)
             desc_html = r.text
-            # searching for the actual description inside the desc_html. This only works when the description is completely unformatted, so doesn't work often.
+            # searching for the actual description inside the desc_html. This only works when the description is
+            # completely unformatted, so doesn't work often.
             pattern = re.compile(r'ds_div">\n\s+(.+)\s</div>')
             matches = pattern.findall(desc_html)
             for match in matches:
@@ -132,27 +156,27 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
                 # print(full_size_thumbnail_url)
                 image_str += img_template.format(full_size_thumbnail_url)
 
-        # create instance of class Listing, starting with name listing1 for instance and so forth, and print attributes of instance
-        instance_title = 'listing' + str(listings_found)
+        # create instance of class Listing, starting with name listing1 for instance and so forth, and print
+        # attributes of instance
+        # instance_title = 'listing' + str(listings_found)
         instance_title = listing.Listing(listing_title, url, item_condition, item_price, shipping_cost, best_offer,
-                                        auction_)
+                                         auction_)
         print(instance_title.__dict__)
 
+        html = html_template.format(instance_title.Title, instance_title.URL,
+                                    instance_title.Condition,
+                                    instance_title.Price,
+                                    instance_title.Shipping,
+                                    instance_title.Auction,
+                                    instance_title.Best_Offer, image_str)
+        # print(html)
+        # print(image_str)
 
-
-        html=html_template.format(instance_title.Title, instance_title.URL,
-                                                                                instance_title.Condition,
-                                                                                instance_title.Price,
-                                                                                instance_title.Shipping,
-                                                                                instance_title.Auction,
-                                                                                instance_title.Best_Offer,image_str)
-        #print(html)
-        #print(image_str)
-
-        #Do we want an auction?
-        if buyitnow == True:   
-            #send an email if price+shipping less than maxprice.
-            if float(str(instance_title.Price[1:]))+float(str(instance_title.Shipping[1:])) <= maxprice and str(instance_title.Auction) == "False":  
+        # Do we want an auction?
+        if buyitnow:
+            # send an email if price+shipping less than maxprice.
+            if float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
+                    instance_title.Auction) == "False":
                 sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
                                         text_content=f'''
         Link: {instance_title.URL}
@@ -161,12 +185,13 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
         Price: {instance_title.Price}
         Shipping: {instance_title.Shipping}
         Auction: {instance_title.Auction}
-        Best Offer: {instance_title.Best_Offer}''', 
-                html_content=html)
-
+        Best Offer: {instance_title.Best_Offer}''',
+                                        html_content=html)
+                recommended.add(instance_title.URL)  # add to set
                 print('Sent an email')
-        elif buyitnow == False:
-            if float(str(instance_title.Price[1:]))+float(str(instance_title.Shipping[1:])) <= maxprice and str(instance_title.Auction) == "True":  
+        elif not buyitnow:
+            if float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
+                    instance_title.Auction) == "True":
                 sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
                                         text_content=f'''
         Link: {instance_title.URL}
@@ -175,11 +200,14 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
         Price: {instance_title.Price}
         Shipping: {instance_title.Shipping}
         Auction: {instance_title.Auction}
-        Best Offer: {instance_title.Best_Offer}''', 
-                html_content=html)
+        Best Offer: {instance_title.Best_Offer}''',
+                                        html_content=html)
 
+                recommended.add(instance_title.URL)  # add to set
                 print('Sent an email')
 
+        save(f'{recipient}.dat', recommended)  # saving te set to file
         print('\n')
+
 
 notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', maxprice=30.00)
