@@ -97,6 +97,61 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
     #return final_search_query
     return urls
 
+def get_searchresults_url(s: requests.Session, searchterm, item_condition=None, sort_listings=None):
+    splitted_searchterm = searchterm.split(' ')
+
+    final_search_query = ""
+    # FOR PARTS LISTINGS: + '&LH_ItemCondition=7000'
+    # USED: +'&LH_ItemCondition=3000'
+    # NEW: +'&LH_ItemCondition=1000'
+
+    # Newly Listed: +'&_sop=10'
+    # Best Match: +'&_sop=12'
+    # Ending Soonest: +'&_sop=1'
+    # Sort Price+Shipping Low to High: +'&_sop=15'
+    # Sold/Completed listings: +'&LH_Sold=1&LH_Complete=1'
+
+    if len(splitted_searchterm) == 1:
+        query_url = f'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.X{splitted_searchterm[0]}.TRS0&_nkw={splitted_searchterm[0]}&_sacat=0&_ipg=200&LH_PrefLoc=1'
+        final_search_query=query_url
+    elif len(splitted_searchterm) > 1:
+        query_url = 'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.X.TRS0&_nkw=&_sacat=0&_ipg=200&LH_PrefLoc=1'
+        query_url = query_url.split('.TRS')
+        x = query_url[1].split('nkw=')
+        query_url.pop()
+        query_url.append(x[0])
+        query_url.append(x[1])
+
+        query_url[0] += '.TRS'
+        query_url[1] += 'nkw='
+        for i in range(len(splitted_searchterm) - 1):
+            query_url[0] += f'{splitted_searchterm[i]}' + '+'
+            query_url[1] += f'{splitted_searchterm[i]}' + '+'
+        query_url[0] += f'{splitted_searchterm[-1]}'
+        query_url[1] += f'{splitted_searchterm[-1]}'
+
+        final_search_query = query_url[0] + query_url[1] + query_url[2]
+
+    if item_condition != None:
+        if item_condition == 'parts':
+            final_search_query +='&LH_ItemCondition=7000'
+        elif item_condition == 'used':
+            final_search_query += '&LH_ItemCondition=3000'
+        elif item_condition == 'new':
+            final_search_query += '&LH_ItemCondition=1000'
+    if sort_listings != None:
+        if sort_listings == 'newest':
+            final_search_query += '&_sop=10'
+        elif sort_listings == 'best':
+            final_search_query += '&_sop=12'
+        elif sort_listings == 'soonest':
+            final_search_query += '&_sop=1'
+        elif sort_listings == 'lowest':
+            final_search_query += '&_sop=15'
+        elif sort_listings == 'sold':
+            final_search_query += '&LH_Sold=1&LH_Complete=1'
+
+        return final_search_query
 #test use only
 #s = requests.Session()
 #print(get_listing_urls(s, 'z77 motherboard', item_condition='parts', sort_listings='newest'))
