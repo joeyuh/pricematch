@@ -59,8 +59,8 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
         page_html = r.text
 
         # FOR TESTING PURPOSES ONLY
-        with open('temp1.html', 'a') as f:
-            f.write(page_html)
+        #with open('temp1.html', 'a') as f:
+            #f.write(page_html)
 
         # find price on page
         pattern = re.compile(r'>US\s\$\d+\.\d\d')
