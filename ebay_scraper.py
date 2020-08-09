@@ -4,6 +4,7 @@ import lxml.html
 from bs4 import BeautifulSoup
 import os
 import pickle
+import time
 # homemade modules below!
 import listing
 import sendemail
@@ -26,7 +27,7 @@ def save(filename, s: set):
 
 
 def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='newest', itemcondition='parts',
-              buyitnow=True):
+              buyitnow=True, load_results=5):
     recommended: set = load(f'{recipient}.dat')
     html_template = \
         '''
@@ -64,8 +65,8 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
         r'href=".+">\n\s+<h3\sclass="s-item__title">\s+.+\n\s+</h3>\n\s*.*\n\s*.*\n\s*.*SECONDARY_INFO">\n\s+.+\n')
     listing_results = pattern.findall(html_str)
 
-    listings_found = 1
-    for match in listing_results:
+    #listings_found = 1
+    for match in listing_results[:load_results]:
         matched_parts = match.split('\n')
         url = matched_parts[0][6:-2]
         # print(url)
@@ -209,5 +210,10 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
         save(f'{recipient}.dat', recommended)  # saving te set to file
         print('\n')
 
-
-notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', maxprice=30.00)
+while True:
+    #checks for the newest 5 listings for broken z170 motherboards (newest and for parts are set by default)
+    #checks every 10 seconds.
+    notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
+    time.sleep(10)
+    
