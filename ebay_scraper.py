@@ -212,7 +212,7 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
 
 while True:
     #checks for the newest 5 listings for broken z170 motherboards
-    #checks every 10 seconds.
+    #checks every 60 seconds.
     notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
             maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
     time.sleep(60)
