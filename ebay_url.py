@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 
 
-def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_listings=None):
+def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_listings=None, max_price=999):
     splitted_searchterm = searchterm.split(' ')
 
     urls = []
@@ -59,6 +59,13 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
         elif sort_listings == 'sold':
             final_search_query += '&LH_Sold=1&LH_Complete=1'
 
+        if max_price != 999:
+            final_search_query += f'&_udhi={max_price}'
+        else:
+            pass
+
+        return final_search_query
+
     i = 1
     while True:
         # print(final_search_query + f'&_pgn={i}')
@@ -97,7 +104,7 @@ def get_listing_urls(s: requests.Session, searchterm, item_condition=None, sort_
     #return final_search_query
     return urls
 
-def get_searchresults_url(s: requests.Session, searchterm, item_condition=None, sort_listings=None):
+def get_searchresults_url(s: requests.Session, searchterm, item_condition=None, sort_listings=None, max_price=999):
     splitted_searchterm = searchterm.split(' ')
 
     final_search_query = ""
@@ -150,8 +157,13 @@ def get_searchresults_url(s: requests.Session, searchterm, item_condition=None, 
             final_search_query += '&_sop=15'
         elif sort_listings == 'sold':
             final_search_query += '&LH_Sold=1&LH_Complete=1'
+    
+    if max_price != 999:
+        final_search_query += f'&_udhi={max_price}'
+    else:
+        pass
 
-        return final_search_query
+    return final_search_query
 #test use only
-#s = requests.Session()
-#print(get_listing_urls(s, 'z77 motherboard', item_condition='parts', sort_listings='newest'))
+s = requests.Session()
+print(get_searchresults_url(s, 'z170 motherboard', item_condition='parts', sort_listings='newest', max_price=29.99))

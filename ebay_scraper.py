@@ -54,8 +54,9 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
     s = requests.Session()
     # using ebay_url.py to generate a search results page url
     searchresultspage_url = ebay_url.get_searchresults_url(s, search_term, item_condition=itemcondition,
-                                                           sort_listings=sortlistings)
+                                                           sort_listings=sortlistings, max_price=maxprice)
     source = s.get(searchresultspage_url).text
+    #print(source)
     soup = BeautifulSoup(source, 'lxml')
     html_str = soup.prettify()
 
@@ -214,6 +215,6 @@ while True:
     #checks for the newest 5 listings for broken z170 motherboards
     #checks every 60 seconds.
     notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
-            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=99999)
     time.sleep(60)
     
