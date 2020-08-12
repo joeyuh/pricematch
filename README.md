@@ -22,7 +22,7 @@ Modules you’ll need:
 
 -lxml
 
-(probably gonna make you use the command line in your computer and type ‘pip install ‘requests’ for example. This may be wrong. Follow the instructions.)
+(probably gonna make you use the command line in your computer and type ‘pip install requests’ for example. This may be wrong. Follow the instructions.)
 
 Everything *should* be set up properly.
 The code *should* now work. 
