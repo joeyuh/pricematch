@@ -54,6 +54,9 @@ IF YOU’D LIKE TO CHANGE HOW OFTEN THE PROGRAM LOOPS, CHANGE THE NUMBER INSIDE 
 
 IF YOU WANT MULTIPLE DIFFERENT SEARCHES, simply copy and paste notify_me(everything in here) immediately below the first search, but above time.sleep(x). Change the search term, recipient, maxprice, whatever you like because this is a completely different search.
 
+AN EXAMPLE SETUP (I actually use this):
+https://imgur.com/a/KMQAh5k
+
 THAT IS ALL! Run the program and it should loop indefinitely, checking every 60 seconds or whatever you set it to for your personal ebay tastes. It will write to a file, called your_email.dat . This is your profile, and the program will check this file to make sure it does not send duplicate emails. 
 
 
