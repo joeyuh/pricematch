@@ -15,9 +15,13 @@ You’ll need to be using some sort of python 3 for this, you’ll probably see 
 
 Google on how to install each of python modules l’m talking about.
 Modules you’ll need: 
+
 -BeautifulSoup
+
 -requests
+
 -lxml
+
 (probably gonna make you use the command line in your computer and type ‘pip install ‘requests’ for example. This may be wrong. Follow the instructions.)
 
 Everything *should* be set up properly.
