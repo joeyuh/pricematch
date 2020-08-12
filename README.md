@@ -33,7 +33,8 @@ Open ebay_scraper.py.
 Scoll to the bottom, under the while(True).
 
 
-IMPORTANT: Everything you’ll need to change is under the parentheses of notify_me. Here are details about what you’ll need to change. IF SOMETHING IS IN QUOTES, INPUT WHAT YOU NEED INSIDE THE QUOTES. EVERYTHING EXCEPT recipient IS ALREADY PRECONFIGURED, but obviously for my own example searches.
+IMPORTANT: Everything you’ll need to change is under the parentheses of notify_me. Here are details about what you’ll need to change. IF SOMETHING IS IN QUOTES, INPUT WHAT YOU NEED INSIDE THE QUOTES. EVERYTHING EXCEPT recipient IS ALREADY PRECONFIGURED, but obviously for my own example searches. Here is what you can change.
+
 -recipient: the email address you want to receive notifications to.
 
 -search_term: what you want to search on ebay.
