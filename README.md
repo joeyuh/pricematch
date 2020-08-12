@@ -6,7 +6,7 @@ Find the best price for your favorite used hardware on eBay, r/HardwareSwap and 
 
 Instructions on how to get Ebay notifications working:
 
-PLEASE READ THIS DOCUMENT IN ITS ENTIRETY. I hope I have made everything fairly clear, this should not be terribly difficult to set up if you already have python installed on your machine.
+PLEASE READ THIS DOCUMENT IN ITS ENTIRETY. EVERYTHING MAY LOOK DAUNTING, BUT TRUST ME, FOLLOW INSTRUCTIONS AND USE GOOGLE AND YOU CAN BE UP AND RUNNING IN 10 MINUTES. I hope I have made everything fairly clear, this should not be terribly difficult to set up if you already have python installed on your machine.
 
 Go to github, use the download link.
 Unzip the contents of the github download, save all contents to the same folder. (there are extra files, just ignore them, the important ones are sendemail.py, ebay_scraper.py, ebay_url.py, and listing.py)
