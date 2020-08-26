@@ -94,18 +94,18 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
             item_price = match[4:]
             # print(item_price)
 
-        # Best Offer?
-        best_offer = False
-        if "Best Offer" in page_html:
-            # print('or Best Offer')
-            best_offer = True
-
         # Auction?
         auction_ = False
         if "Current bid" in page_html:
             auction_ = True
         elif "Place bid" in page_html:
             auction_ = True
+            
+        # Best Offer?
+        best_offer = False
+        if "Best Offer" in page_html:
+            # print('or Best Offer')
+            best_offer = True
 
         # Free Shipping? If no, how much?
         pattern = re.compile(r'fshippingCost.+\n\s+<span>(FREE|\$\d+\.\d+)')
@@ -217,8 +217,8 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
 while True:
     notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
             maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
-    notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
-            maxprice=50.00, sortlistings='newest', itemcondition='parts', buyitnow=False, best_offer=True, load_results=5)
+    #notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
+            #maxprice=50.00, sortlistings='newest', itemcondition='parts', buyitnow=False, best_offer=True, load_results=5)
     notify_me(recipient='5214894a@gmail.com', search_term='z97 motherboard', 
             maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
     notify_me(recipient='5214894a@gmail.com', search_term='z87 motherboard', 
