@@ -173,64 +173,52 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
                                     instance_title.Shipping,
                                     instance_title.Auction,
                                     instance_title.Best_Offer, image_str)
+        textcontent = f'''
+        Link: {instance_title.URL}
+
+        Condition: {instance_title.Condition}
+        Price: {instance_title.Price}
+        Shipping: {instance_title.Shipping}
+        Auction: {instance_title.Auction}
+        Best Offer: {instance_title.Best_Offer}'''
         # print(html)
         # print(image_str)
 
-        # Do we want an auction?
-        if buyitnow:
-            # send an email if price+shipping less than maxprice.
+        # Send email based on Best Offer, then auction/buyitnow.
+        if best_offer:
             if float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
-                    instance_title.Auction) == "False":
+                    instance_title.Auction) == "False": #buyitnow
                 sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
-                                        text_content=f'''
-        Link: {instance_title.URL}
-
-        Condition: {instance_title.Condition}
-        Price: {instance_title.Price}
-        Shipping: {instance_title.Shipping}
-        Auction: {instance_title.Auction}
-        Best Offer: {instance_title.Best_Offer}''',
-                                        html_content=html)
+                                        text_content=textcontent, html_content=html)
                 recommended.add(instance_title.URL)  # add to set
                 print('Sent an email')
             elif float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
-                    instance_title.Auction) == "False" and str(instance_title.Best_Offer) == "True":
+                    instance_title.Auction) == "True": #auction
                 sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
-                                        text_content=f'''
-        Link: {instance_title.URL}
-
-        Condition: {instance_title.Condition}
-        Price: {instance_title.Price}
-        Shipping: {instance_title.Shipping}
-        Auction: {instance_title.Auction}
-        Best Offer: {instance_title.Best_Offer}''',
-                                        html_content=html)
+                                        text_content= textcontent, html_content=html)
                 recommended.add(instance_title.URL)  # add to set
-        elif not buyitnow:
+        elif not best_offer:
             if float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
-                    instance_title.Auction) == "True":
+                    instance_title.Auction) == "False": #buy it now
                 sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
-                                        text_content=f'''
-        Link: {instance_title.URL}
-
-        Condition: {instance_title.Condition}
-        Price: {instance_title.Price}
-        Shipping: {instance_title.Shipping}
-        Auction: {instance_title.Auction}
-        Best Offer: {instance_title.Best_Offer}''',
-                                        html_content=html)
-
+                                        text_content=textcontent, html_content=html)
+                recommended.add(instance_title.URL)  # add to set
+                print('Sent an email')
+            elif float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
+                    instance_title.Auction) == "True": #auction
+                sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
+                                        text_content=textcontent, html_content=html)
                 recommended.add(instance_title.URL)  # add to set
                 print('Sent an email')
 
-        save(f'{recipient}.dat', recommended)  # saving te set to file
+        save(f'{recipient}.dat', recommended)  # saving the set to file
         print('\n')
 
 while True:
-    #checks for the newest 5 listings for broken z170 motherboards
-    #checks every 60 seconds.
     notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
-            maxprice=50.00, sortlistings='newest', itemcondition='parts', buyitnow=True, best_offer=True, load_results=5)
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
+    notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
+            maxprice=50.00, sortlistings='newest', itemcondition='parts', buyitnow=False, best_offer=True, load_results=5)
     notify_me(recipient='5214894a@gmail.com', search_term='z97 motherboard', 
             maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
     notify_me(recipient='5214894a@gmail.com', search_term='z87 motherboard', 
