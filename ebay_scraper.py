@@ -27,7 +27,7 @@ def save(filename, s: set):
 
 
 def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='newest', itemcondition='parts',
-              buyitnow=True, load_results=5):
+              buyitnow=True, best_offer = False, load_results=5):
     recommended: set = load(f'{recipient}.dat')
     html_template = \
         '''
@@ -111,6 +111,7 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
         pattern = re.compile(r'fshippingCost.+\n\s+<span>(FREE|\$\d+\.\d+)')
         matches = pattern.findall(page_html)
         # the findall will only find things in the group, so it will only return FREE or $xx.xx.
+        shipping_cost = r'$0.00'
         for match in matches:
             if match == 'FREE':
                 shipping_cost = r'$0.00'
@@ -141,6 +142,7 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
         image_str = ""
         pattern = re.compile(r'image"\ssrc="(.+)"\ss')
         matches = pattern.findall(page_html)
+        big_image = None
         for match in matches[:-1]:
             match = match.replace('300', '1000')
             big_image = match
@@ -191,6 +193,19 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
                                         html_content=html)
                 recommended.add(instance_title.URL)  # add to set
                 print('Sent an email')
+            elif float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
+                    instance_title.Auction) == "False" and str(instance_title.Best_Offer) == "True":
+                sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
+                                        text_content=f'''
+        Link: {instance_title.URL}
+
+        Condition: {instance_title.Condition}
+        Price: {instance_title.Price}
+        Shipping: {instance_title.Shipping}
+        Auction: {instance_title.Auction}
+        Best Offer: {instance_title.Best_Offer}''',
+                                        html_content=html)
+                recommended.add(instance_title.URL)  # add to set
         elif not buyitnow:
             if float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
                     instance_title.Auction) == "True":
@@ -215,6 +230,21 @@ while True:
     #checks for the newest 5 listings for broken z170 motherboards
     #checks every 60 seconds.
     notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
-            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=99999)
-    time.sleep(60)
+            maxprice=50.00, sortlistings='newest', itemcondition='parts', buyitnow=True, best_offer=True, load_results=5)
+    notify_me(recipient='5214894a@gmail.com', search_term='z97 motherboard', 
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
+    notify_me(recipient='5214894a@gmail.com', search_term='z87 motherboard', 
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
+    notify_me(recipient='5214894a@gmail.com', search_term='z77 motherboard', 
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
+    notify_me(recipient='5214894a@gmail.com', search_term='z270 motherboard', 
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
+    notify_me(recipient='5214894a@gmail.com', search_term='h81 motherboard', 
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=20)
+    notify_me(recipient='5214894a@gmail.com', search_term='h97 motherboard', 
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=20)
+    notify_me(recipient='5214894a@gmail.com', search_term='b85 motherboard', 
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=20)
+    time.sleep(450
+    )
     
