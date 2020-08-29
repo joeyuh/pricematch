@@ -187,25 +187,25 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
         # Send email based on Best Offer, then auction/buyitnow.
         if best_offer:
             if float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
-                    instance_title.Auction) == "False": #buyitnow
+                    instance_title.Auction) == "False" and buyitnow: #buyitnow
                 sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
                                         text_content=textcontent, html_content=html)
                 recommended.add(instance_title.URL)  # add to set
                 print('Sent an email')
             elif float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
-                    instance_title.Auction) == "True": #auction
+                    instance_title.Auction) == "True" and not buyitnow: #auction
                 sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
                                         text_content= textcontent, html_content=html)
                 recommended.add(instance_title.URL)  # add to set
         elif not best_offer:
             if float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
-                    instance_title.Auction) == "False": #buy it now
+                    instance_title.Auction) == "False" and buyitnow: #buy it now
                 sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
                                         text_content=textcontent, html_content=html)
                 recommended.add(instance_title.URL)  # add to set
                 print('Sent an email')
             elif float(str(instance_title.Price[1:])) + float(str(instance_title.Shipping[1:])) <= maxprice and str(
-                    instance_title.Auction) == "True": #auction
+                    instance_title.Auction) == "True" and not buyitnow: #auction
                 sendemail.send_an_email(subject=f'We found a {instance_title.Title}', recipient=recipient,
                                         text_content=textcontent, html_content=html)
                 recommended.add(instance_title.URL)  # add to set
