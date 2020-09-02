@@ -217,8 +217,8 @@ def notify_me(recipient=None, search_term=None, maxprice=None, sortlistings='new
 while True:
     notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
             maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
-    #notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
-            #maxprice=50.00, sortlistings='newest', itemcondition='parts', buyitnow=False, best_offer=True, load_results=5)
+    notify_me(recipient='5214894a@gmail.com', search_term='z170 motherboard', 
+            maxprice=50.00, sortlistings='newest', itemcondition='parts', buyitnow=False, best_offer=True, load_results=5)
     notify_me(recipient='5214894a@gmail.com', search_term='z97 motherboard', 
             maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
     notify_me(recipient='5214894a@gmail.com', search_term='z87 motherboard', 
@@ -228,11 +228,10 @@ while True:
     notify_me(recipient='5214894a@gmail.com', search_term='z270 motherboard', 
             maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
     notify_me(recipient='5214894a@gmail.com', search_term='h81 motherboard', 
-            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=20)
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
     notify_me(recipient='5214894a@gmail.com', search_term='h97 motherboard', 
-            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=20)
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
     notify_me(recipient='5214894a@gmail.com', search_term='b85 motherboard', 
-            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=20)
-    time.sleep(450
-    )
+            maxprice=30.00, sortlistings='newest', itemcondition='parts', buyitnow=True, load_results=5)
+    time.sleep(450)
     
