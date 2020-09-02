@@ -19,3 +19,5 @@ subreddit = reddit.subreddit('hardwareswap')
 for submission in subreddit.new(limit=10):
     print(submission.title)  # Output: the submission's title
     print(submission.url)    # Output: the submission's URL
+    print(submission.link_flair_text)
+    print(submission.selftext)
