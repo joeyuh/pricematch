@@ -1,5 +1,7 @@
 import praw
 
+#I HAVE CREATED A NEW REDDIT ACCOUNT. USERNAME = 'pcbeest', PASSWORD = 'whataPassword'.
+
 client_id = 'oA7oqPSjXGLeAw'
 client_secret = 'rxQEH9FajvtDvr-PoxtjmEvxEKw'
 user_agent = "hws_scrape"
@@ -12,11 +14,8 @@ reddit = praw.Reddit(client_id = client_id,
                     username = username,
                     password = password)
 
-subred = reddit.subreddit('hardwareswap')
+subreddit = reddit.subreddit('hardwareswap')
 
-hws_new = subred.new(limit=10)
-
-x = next(hws_new)
-
-for i in hws_new:
-    print(i.title)
+for submission in subreddit.new(limit=10):
+    print(submission.title)  # Output: the submission's title
+    print(submission.url)    # Output: the submission's URL
