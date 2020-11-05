@@ -1,10 +1,11 @@
 import praw
 import re
 import requests
-#homemade modules below!
+import time
+# homemade modules below!
 import sendemail
 
-#I HAVE CREATED A NEW REDDIT ACCOUNT. USERNAME = 'pcbeest', PASSWORD = 'whataPassword'.
+# I HAVE CREATED A NEW REDDIT ACCOUNT. USERNAME = 'pcbeest', PASSWORD = 'whataPassword'.
 
 client_id = 'oA7oqPSjXGLeAw'
 client_secret = 'rxQEH9FajvtDvr-PoxtjmEvxEKw'
@@ -12,31 +13,60 @@ user_agent = "hws_scrape"
 username = 'pcbeest'
 password = 'whataPassword'
 
-reddit = praw.Reddit(client_id = client_id, 
-                    client_secret = client_secret,
-                    user_agent = user_agent,
-                    username = username,
-                    password = password)
+reddit = praw.Reddit(client_id=client_id,
+                     client_secret=client_secret,
+                     user_agent=user_agent,
+                     username=username,
+                     password=password)
 
-subreddit = reddit.subreddit('hardwareswap')
+
 
 s = requests.Session()
-useragent = {"User-Agent":'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:77.0) Gecko/20190101 Firefox/77.0'}
-for submission in subreddit.new(limit=10):
-    listing_data = submission.selftext
+useragent = {
+    "User-Agent": 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:77.0) Gecko/20190101 Firefox/77.0'}
 
-    if submission.link_flair_text == 'SELLING':
-        print(submission.url)
-        print(submission.link_flair_text)
-        print(submission.title)
-        print(submission.selftext)
+while True:
+    subreddit = reddit.subreddit('hardwareswap')
+    for submission in subreddit.new(limit=100):
+        try:
+            listing_text = submission.selftext
+            # print(submission.link_flair_text)
+            submission.title = submission.title.split("[H]")
+            submission.title = submission.title[1].split("[W]")
 
-        #find imgur link url. People might timestamp in other sites, but ....
-        pattern = re.compile(r'https://imgur\.com/a/.......')
-        matches = pattern.findall(listing_data)
-        for match in matches: 
-            print(match)
+            if "paypal" in submission.title[1].lower():
+                print(submission.title[0])
+                print(submission.url)
+                #print(submission.selftext) #THIS IS THE TEXT OF THE POST!
 
+                #find the price of the item
+                price_re = re.compile(r'(bought for|sold for|asking( for)?|selling for)?\s?\$?\d{1,3}(\.\d{0,2})?\$?\s?(shipped|local|plus|\+|obo|or|sold)?', re.IGNORECASE)
 
-        print('\n\n\n')
-            
+                prices = price_re.finditer(listing_text)
+                for price in prices:
+                    price_string = price.group(0)
+                    if 'bought' in price_string or 'sold' in price_string:
+                        print(f'Deleted {price_string}')
+                        continue
+                    price_string = price_string.lower().replace('.','')\
+                        .replace(' ', '').replace('sold','')
+
+                    try:
+                        temp = float(price_string)
+                        # print(f'Deleted {temp}')
+                    except ValueError:
+                        print(price_string)
+                # find imgur link url. People might timestamp in other sites, but ....
+                imgur_url = re.compile(r'imgur\.com/a/.......')
+                imgur_urls = imgur_url.finditer(listing_text)
+                for url in imgur_urls:
+                    #print(url)
+                    pass
+
+                print('\n')
+                #break
+        except:
+            pass
+        # time.sleep(0.5)
+    break
+
