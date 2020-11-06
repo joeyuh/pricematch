@@ -44,11 +44,11 @@ while True:
             title = title[1].split("[W]")
 
             if "paypal" in title[1].lower():
-                print(title[0])
-                print(submission.url)
+                #print(title[0])
+                #print(submission.url)
                 # print(submission.selftext) #THIS IS THE TEXT OF THE POST!
                 if '|' in submission.selftext:  # we found a table
-                    print('Table:')
+                    #print('Table:')
                     # print(listing_text)
                     loader = ptr.MarkdownTableTextLoader(text=submission.selftext)
                     writer = ptw.TableWriterFactory.create_from_format_name("rst")
@@ -73,10 +73,10 @@ while True:
                     elif '|' in title[0]:   # Yes, someone used this to split the item
                         splitter_found = True
                         items = title[0].split('|')
-                        print(items)
+                        #print(items)
                     else:
                         item_count = 1
-                    print(f'Item count {item_count}')
+                    #print(f'Item count {item_count}')
                     # find the price of the item
                     price_re = re.compile(
                         r'(bought for\s|sold for\s|asking( for)?\s|selling for\s)?\$?\d{1,4}(\.\d{0,2})?\$?\s?(shipped|local|plus|\+|obo|or|sold)*',
@@ -87,7 +87,7 @@ while True:
                         # print(price.groups())
                         price_string = price.group(0)
                         if 'bought' in price_string or 'sold' in price_string:  # No sold or brought info
-                            print(f'Deleted {price_string}')
+                            #print(f'Deleted {price_string}')
                             continue
                         price_string = price_string.lower().replace('.', '') \
                             .replace(' ', '').replace('sold', '')
@@ -98,16 +98,27 @@ while True:
                             temp = float(price_string)
                             # print(f'Deleted {temp}')
                         except ValueError:   # Otherwise we are fine
-                            print(price_string)
+                            #print(price_string)
+                            pass
 
                     # find imgur link url. People might timestamp in other sites, but ....
                     imgur_url = re.compile(r'(imgur\.com/a/.+|imgur.com/gallery/.+|ibb.co/.+)')
                     imgur_urls = imgur_url.finditer(listing_text)
                     for url in imgur_urls:
-                        print(url)
+                        pass
+                        #print(url.group(0))
+
+                    #delete all other URLs
+                    findurls = re.compile(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}\
+                        |www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|\
+                        https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})')
+                    deletedurls = findurls.finditer(listing_text)
+                    for link in deletedurls:
+                        listing_text.replace(f'{link}', '')
+                        print(f"Deleted url:{link}")
                         
 
-                    print('\n')
+                    #print('\n')
                 # break
         except:
             pass
