@@ -61,3 +61,6 @@ THAT IS ALL! Run the program and it should loop indefinitely, checking every 60 
 
 
 
+FOR HWS
+
+pip install 'pytablereader[md]'
