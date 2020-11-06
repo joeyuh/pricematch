@@ -9,6 +9,13 @@ import pandas
 # homemade modules below!
 import sendemail
 
+
+class HWSItem:
+    def __init__(self):
+        self.price_str = ''
+        self.price = 0
+        self.name = ''
+
 # I HAVE CREATED A NEW REDDIT ACCOUNT. USERNAME = 'pcbeest', PASSWORD = 'whataPassword'.
 
 client_id = 'oA7oqPSjXGLeAw'
@@ -33,31 +40,51 @@ while True:
         try:
             listing_text = submission.selftext
             # print(submission.link_flair_text)
-            submission.title = submission.title.split("[H]")
-            submission.title = submission.title[1].split("[W]")
+            title = submission.title.split("[H]")
+            title = title[1].split("[W]")
 
-            if "paypal" in submission.title[1].lower():
-                print(submission.title[0])
+            if "paypal" in title[1].lower():
+                print(title[0])
                 print(submission.url)
                 # print(submission.selftext) #THIS IS THE TEXT OF THE POST!
-
                 if '|' in submission.selftext:  # we found a table
                     print('Table:')
                     # print(listing_text)
                     loader = ptr.MarkdownTableTextLoader(text=submission.selftext)
                     writer = ptw.TableWriterFactory.create_from_format_name("rst")
-                    for table_data in loader.load():
-                        writer.from_tabledata(table_data)
-                        writer.write_table()
+                    # for table_data in loader.load():
+                    #     writer.from_tabledata(table_data)
+                    #     writer.write_table()
                         # print(table_data.as_dataframe())
                 else:
+                    final_item_count = 0
+                    item_count = 0    # How many item do we think there is in the listing
+                    price_count = 0   # How many prices we think there is in the listing
+                    splitter_found = False
+                    if ',' in title[0]:
+                        splitter_found = True
+                        items = title[0].split(',')
+                        for item in items:
+                            redacted = item.lower().replace(' ','').replace('bnib','').replace('new','')\
+                                .replace('unopened','').replace('used','')
+                            if redacted == '':
+                                items.remove(item)
+                        item_count =  len(items)
+                    elif '|' in title[0]:   # Yes, someone used this to split the item
+                        splitter_found = True
+                        items = title[0].split('|')
+                        print(items)
+                    else:
+                        item_count = 1
+                    print(f'Item count {item_count}')
                     # find the price of the item
                     price_re = re.compile(
-                        r'(bought for|sold for|asking( for)?|selling for)?\s?\$?\d{1,4}(\.\d{0,2})?\$?\s?(shipped|local|plus|\+|obo|or|sold)?',
+                        r'(bought for\s|sold for\s|asking( for)?\s|selling for\s)?\$?\d{1,4}(\.\d{0,2})?\$?\s?(shipped|local|plus|\+|obo|or|sold)*',
                         re.IGNORECASE)
 
                     prices = price_re.finditer(listing_text)
                     for price in prices:
+                        # print(price.groups())
                         price_string = price.group(0)
                         if 'bought' in price_string or 'sold' in price_string:  # No sold or brought info
                             print(f'Deleted {price_string}')
@@ -84,5 +111,5 @@ while True:
                 # break
         except:
             pass
-        # time.sleep(0.5)
+        # time.sleep(2)
     break
