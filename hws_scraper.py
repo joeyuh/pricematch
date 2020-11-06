@@ -101,11 +101,11 @@ while True:
                             print(price_string)
 
                     # find imgur link url. People might timestamp in other sites, but ....
-                    imgur_url = re.compile(r'imgur\.com/a/.......')
+                    imgur_url = re.compile(r'(imgur\.com/a/.+|imgur.com/gallery/.+|ibb.co/.+)')
                     imgur_urls = imgur_url.finditer(listing_text)
                     for url in imgur_urls:
-                        # print(url)
-                        pass
+                        print(url)
+                        
 
                     print('\n')
                 # break
