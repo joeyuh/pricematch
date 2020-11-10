@@ -5,6 +5,7 @@ import time
 import pytablereader as ptr
 import pytablewriter as ptw
 import pandas
+import datetime
 
 # homemade modules below!
 import sendemail
@@ -72,6 +73,7 @@ while True:
                             text=submission.selftext)
                         writer = ptw.TableWriterFactory.create_from_format_name(
                             "rst")
+ 
                         # for table_data in loader.load():
                         #     writer.from_tabledata(table_data)
                         #     writer.write_table()
@@ -137,6 +139,9 @@ while True:
                         for link in deletedurls:
                             listing_text.replace(f'{link}', '')
                             #print(f"Deleted url:{link}")
+
+                        currenttime = str(datetime.datetime.now())
+                        print("found at " + currenttime[11:-7])   
 
                         print('\n')
                         animation()
