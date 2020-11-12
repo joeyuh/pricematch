@@ -68,16 +68,14 @@ while True:
                     # print(submission.selftext) #THIS IS THE TEXT OF THE POST!
                     if '|' in submission.selftext:
                         print('Table:')
-                        print(listing_text)
-                        loader = ptr.MarkdownTableTextLoader(
-                            text=submission.selftext)
-                        writer = ptw.TableWriterFactory.create_from_format_name(
-                            "rst")
+                        #print(listing_text)
+                        loader = ptr.MarkdownTableTextLoader(text=submission.selftext)
+                        writer = ptw.TableWriterFactory.create_from_format_name("rst")
  
-                        # for table_data in loader.load():
-                        #     writer.from_tabledata(table_data)
-                        #     writer.write_table()
-                        # print(table_data.as_dataframe())
+                        for table_data in loader.load():
+                            writer.from_tabledata(table_data)
+                            writer.write_table()
+                        #print(table_data.as_dataframe())
                     else:
                         final_item_count = 0
                         item_count = 0    # How many item do we think there is in the listing
