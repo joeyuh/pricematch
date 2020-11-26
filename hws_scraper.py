@@ -11,11 +11,12 @@ import datetime
 import sendemail
 
 
-class HWSItem:
+class HWSPost:
     def __init__(self):
-        self.price_str = ''
+        self.title = ''
+        self.body = ''
+        self.timestamp = ''
         self.price = 0
-        self.name = ''
 
 
 def animation():
@@ -69,13 +70,15 @@ while True:
                     if '|' in submission.selftext:
                         print('Table:')
                         #print(listing_text)
-                        loader = ptr.MarkdownTableTextLoader(text=submission.selftext)
-                        writer = ptw.TableWriterFactory.create_from_format_name("rst")
+                        loader = ptr.MarkdownTableTextLoader(
+                            text=submission.selftext)
+                        writer = ptw.TableWriterFactory.create_from_format_name(
+                            "rst")
  
                         for table_data in loader.load():
-                            writer.from_tabledata(table_data)
-                            writer.write_table()
-                        #print(table_data.as_dataframe())
+                             writer.from_tabledata(table_data)
+                             writer.write_table()
+                        # print(table_data.as_dataframe())
                     else:
                         final_item_count = 0
                         item_count = 0    # How many item do we think there is in the listing
