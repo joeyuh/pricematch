@@ -12,12 +12,12 @@ import sendemail
 
 
 class HWSPost:
-    def __init__(self):
-        self.title = ''
-        self.body = ''
-        self.timestamp = ''
-        self.price = 0
-
+    def __init__(self, title, url, body, timestamp, price):
+        self.title = title
+        self.url = url
+        self.body = body
+        self.timestamp = timestamp
+        self.price = price
 
 def animation():
     dot = "."
@@ -56,18 +56,29 @@ while True:
         try:
             listing_text = submission.selftext
             # print(submission.link_flair_text)
+
             title = submission.title.split("[H]")
             title = title[1].split("[W]")
 
             if "paypal" in title[1].lower():
                 if title[0] not in list_of_posts:
                     # We have now seen this post once, writing to list
-                    list_of_posts.append(title[0])
-                    # print(list_of_posts)
-                    print(title[0])
-                    print(submission.url)
-                    # print(submission.selftext) #THIS IS THE TEXT OF THE POST!
-                    if '|' in submission.selftext:
+                    listing_title = title[0]
+                    instance = title[0]
+                    instance = HWSPost
+
+                    instance.title = listing_title
+                    instance.url = submission.url.strip()
+                    instance.body = submission.selftext
+                    instance.price = ''
+                    list_of_posts.append(instance)
+                    #print(list_of_posts)
+
+                    #print(instance.title)
+                    #print(instance.url)
+                    #print(instance.body) #THIS IS THE TEXT OF THE POST!
+                    #print(instance.price)
+                    if '|' in instance.body:
                         print('Table:')
                         #print(listing_text)
                         loader = ptr.MarkdownTableTextLoader(
@@ -84,18 +95,18 @@ while True:
                         item_count = 0    # How many item do we think there is in the listing
                         price_count = 0   # How many prices we think there is in the listing
                         splitter_found = False
-                        if ',' in title[0]:
+                        if ',' in instance.title:
                             splitter_found = True
-                            items = title[0].split(',')
+                            items = instance.title.split(',')
                             for item in items:
                                 redacted = item.lower().replace(' ', '').replace('bnib', '').replace('new', '')\
                                     .replace('unopened', '').replace('used', '')
                                 if redacted == '':
                                     items.remove(item)
                             item_count = len(items)
-                        elif '|' in title[0]:   # Yes, someone used this to split the item
+                        elif '|' in instance.title:   # Yes, someone used this to split the item
                             splitter_found = True
-                            items = title[0].split('|')
+                            items = instance.body.split('|')
                             # print(items)
                         else:
                             item_count = 1
@@ -121,35 +132,50 @@ while True:
                                 temp = float(price_string)
                                 #print(f'Deleted {temp}')
                             except ValueError:   # Otherwise we are fine
-                                print(price_string)
                                 pass
+                                instance.price += '\n'+price_string
+                                #print(instance.price)
+
 
                         # find imgur link url. People might timestamp in other sites, but ....
                         imgur_url = re.compile(
                             r'(imgur\.com/a/.+|imgur.com/gallery/.+|ibb.co/.+)')
                         imgur_urls = imgur_url.finditer(listing_text)
-                        for url in imgur_urls:
-                            pass
-                            print(url.group(0))
+                        try:
+                            for url in imgur_urls:
+                                instance.timestamp = instance.timestamp + url.group(0)
+                            #print(instance.timestamp)
+                        except:
+                            instance.timestamp = 'no timestamps'
+
 
                         # delete all other URLs
                         findurls = re.compile(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}\
                             |www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|\
                             https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})')
                         deletedurls = findurls.finditer(listing_text)
-                        for link in deletedurls:
-                            listing_text.replace(f'{link}', '')
-                            #print(f"Deleted url:{link}")
+                        try:
+                            for link in deletedurls:
+                                listing_text.replace(f'{link}', '')
+                                #print(f"Deleted url:{link}")
+                        except:
+                            pass
+
+
+                        print(instance.title)
+                        print(instance.url)
+                        print(instance.price)
+                        #print(instance.timestamp)
+
 
                         currenttime = str(datetime.datetime.now())
                         print("found at " + currenttime[11:-7])   
 
                         print('\n')
-                        animation()
                 else:
                     animation()
         except:
-            pass
+            print('something went wrong'+'\n')
     time.sleep(1)
 
     # housekeeping to make sure the list doesn't get too long and destroy RAM:
