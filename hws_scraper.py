@@ -44,15 +44,11 @@ reddit = praw.Reddit(client_id=client_id,
                      username=username,
                      password=password)
 
-s = requests.Session()
-useragent = {
-    "User-Agent": 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:77.0) Gecko/20190101 Firefox/77.0'}
-
 list_of_posts = []  # Created so that we can display only new and unseen posts
 
 while True:
     subreddit = reddit.subreddit('hardwareswap')
-    for submission in subreddit.new(limit=5):
+    for submission in subreddit.new(limit=3):
         try:
             listing_text = submission.selftext
             # print(submission.link_flair_text)
@@ -61,7 +57,7 @@ while True:
             title = title[1].split("[W]")
 
             if "paypal" in title[1].lower():
-                if title[0] not in list_of_posts:
+                if len(list_of_posts) == 0 or title[0] != list_of_posts[-1].title or title[0] != list_of_posts[-2].title or title[0] != list_of_posts[-3].title or title[0] != list_of_posts[-4].title:
                     # We have now seen this post once, writing to list
                     listing_title = title[0]
                     instance = title[0]
@@ -72,7 +68,6 @@ while True:
                     instance.body = submission.selftext
                     instance.price = ''
                     list_of_posts.append(instance)
-                    #print(list_of_posts)
 
                     #print(instance.title)
                     #print(instance.url)
@@ -167,15 +162,17 @@ while True:
                         print(instance.price)
                         #print(instance.timestamp)
 
-
                         currenttime = str(datetime.datetime.now())
                         print("found at " + currenttime[11:-7])   
 
                         print('\n')
                 else:
                     animation()
+            else:
+                animation()
         except:
-            print('something went wrong'+'\n')
+            animation()
+            pass
     time.sleep(1)
 
     # housekeeping to make sure the list doesn't get too long and destroy RAM:
