@@ -54,7 +54,7 @@ reddit = praw.Reddit(client_id=client_id,
                      password=password)
 
 list_of_posts = []  # Created so that we can display only new and unseen posts
-res = [] #res is the
+res = [] #res is the list of unduplicated posts.
 while True:
     subreddit = reddit.subreddit('hardwareswap')
 
@@ -119,6 +119,7 @@ while True:
                 post_items.timestamp.append(timestamp)
                 post_items.timestamp = uniquify(post_items.timestamp)
 
+            #IF NEW POSTS HAVE BEEN FOUND, PRINT THEM OUT
             if res_length_after - res_length_before != 0:
                 difference = res_length_after - res_length_before
                 for element in res[-1*difference:]:
