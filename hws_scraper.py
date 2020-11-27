@@ -48,7 +48,7 @@ list_of_posts = []  # Created so that we can display only new and unseen posts
 
 while True:
     subreddit = reddit.subreddit('hardwareswap')
-    for submission in subreddit.new(limit=3):
+    for submission in subreddit.new(limit=4):
         try:
             listing_text = submission.selftext
             # print(submission.link_flair_text)
@@ -59,6 +59,7 @@ while True:
             if "paypal" in title[1].lower():
                 if len(list_of_posts) == 0 or title[0] != list_of_posts[-1].title or title[0] != list_of_posts[-2].title or title[0] != list_of_posts[-3].title or title[0] != list_of_posts[-4].title:
                     # We have now seen this post once, writing to list
+                    print(len(list_of_posts))
                     listing_title = title[0]
                     instance = title[0]
                     instance = HWSPost
@@ -68,6 +69,7 @@ while True:
                     instance.body = submission.selftext
                     instance.price = ''
                     list_of_posts.append(instance)
+                    print(list_of_posts[-1].title)
 
                     #print(instance.title)
                     #print(instance.url)
@@ -158,8 +160,8 @@ while True:
 
 
                         print(instance.title)
-                        print(instance.url)
-                        print(instance.price)
+                        print(instance.url.strip())
+                        print(instance.price.strip())
                         #print(instance.timestamp)
 
                         currenttime = str(datetime.datetime.now())
