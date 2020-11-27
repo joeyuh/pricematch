@@ -54,7 +54,7 @@ reddit = praw.Reddit(client_id=client_id,
                      password=password)
 
 list_of_posts = []  # Created so that we can display only new and unseen posts
-res = []
+res = [] #res is the
 while True:
     subreddit = reddit.subreddit('hardwareswap')
 
@@ -123,7 +123,14 @@ while True:
                 difference = res_length_after - res_length_before
                 for element in res[-1*difference:]:
                     print(element.title+" - "+element.url)
-                    print(element.price+'\n')
+                    print(element.price)
+                    if len(element.timestamp) == 1:
+                        print(str(element.timestamp[0]))
+                    else:
+                        print(element.timestamp)
+                    currenttime = str(datetime.datetime.now())
+                    print("found at " + currenttime[11:-7])
+                    print('')
 
     time.sleep(1)    
 
