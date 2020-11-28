@@ -66,14 +66,18 @@ while True:
             continue
         if 'paypal' in want.lower(): #aka if it's a selling post
             #CREATE INSTANCE OF CLASS HWSPOST, GIVE IT ATTRIBUTES OF TITLE, BODY, URL.
-            post_items = submission.title.split('[H]')[1].split('[W]')[0]
-            post_body = submission.selftext
-            post_url = submission.url.strip()
-            #print(post_items) #Print what they're selling
-            #print(post_body+3*'\n')
+            try:
+                post_items = submission.title.split('[H]')[1].split('[W]')[0]
+                post_body = submission.selftext
+                post_url = submission.url.strip()
+                #print(post_items) #Print what they're selling
+                #print(post_body+3*'\n')
 
-            post_items = HWSPost(title=post_items, body=post_body, url=post_url)
-            list_of_posts.append(post_items)
+                post_items = HWSPost(
+                    title=post_items, body=post_body, url=post_url)
+                list_of_posts.append(post_items)
+            except:
+                continue
 
             #SEE IF POST HAS ALREADY BEEN PROCESSED
             res_length_before = len(res)
@@ -95,7 +99,7 @@ while True:
 
             #FIND PRICES in post_body
             price_re = re.compile(
-            r'(bought for\s|sold for\s|asking( for)?\s|selling for\s)?\$?\d{1,4}(\.\d{0,2})?\$?\s?(shipped|local|plus|\+|obo|or|sold|for)*',
+            r'(bought for\s|sold for\s|asking( for)?\s|selling for\s|shipped\s)?\$?\d{1,4}(\.\d{0,2})?\$?\s?(shipped|local|plus|\+|obo|or|sold|for|USD)*',
             re.IGNORECASE)
             prices = price_re.finditer(post_body)
             for price in prices:
@@ -111,11 +115,11 @@ while True:
 
             #FIND TIMESTAMP LINKS IN THE POST'S SOURCE CODE AND ATTRIBUTE THEM TO THE CLASS INSTANCE
             source = webscraper.scrape_page(post_url)
-            search_string = r'(imgur\.com/(a/)?.+|imgur.com/gallery/.+|ibb.co/.+)'
+            search_string = r'href="(https://)?(i.)?(imgur\.com/(a/)?\w{5,7}|imgur.com/gallery/\w{5,7}|ibb.co/.{5,7})'
             timestamp_urls = re.finditer(search_string, source)
             post_items.timestamp = []
             for match in timestamp_urls:
-                timestamp = str(match).split("match='")[1].split('"')[0]
+                timestamp = match.group(0)[6:]
                 post_items.timestamp.append(timestamp)
                 post_items.timestamp = uniquify(post_items.timestamp)
 
@@ -124,7 +128,10 @@ while True:
                 difference = res_length_after - res_length_before
                 for element in res[-1*difference:]:
                     print(element.title+" - "+element.url)
-                    print(element.price)
+                    if element.price == None:
+                        print('Unable to find price')
+                    else:
+                        print(element.price)
                     if len(element.timestamp) == 1:
                         print(str(element.timestamp[0]))
                     else:
@@ -132,6 +139,12 @@ while True:
                     currenttime = str(datetime.datetime.now())
                     print("found at " + currenttime[11:-7])
                     print('')
+
+            #HOUSEKEEPING: MAKING SURE RES AND LIST_OF_POSTS DON'T GET TOO LONG
+            if len(res) > 50:
+                res.pop(0)
+            if len(list_of_posts) > 50:
+                list_of_posts.pop(0)
 
     time.sleep(1)    
 
