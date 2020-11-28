@@ -132,7 +132,7 @@ while True:
                                 break
                     except:  # no prices found, useless af. Raise an error so we will jump to the except: as if no tables found.
                         raise NameError('No prices found')
-            except: #no tables found
+            except: #no useful tables found
                 prices = price_re.finditer(post_body)
                 for price in prices:
                     price_string = price.group(0)
