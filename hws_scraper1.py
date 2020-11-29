@@ -1,13 +1,13 @@
-import praw
-import re
-import time
-import pytablereader as ptr
-import pytablewriter as ptw
-import pandas
 import datetime
-# homemade modules below!
-import sendemail
-import webscraper
+import re
+import threading
+import time
+
+import beepy
+import praw
+import pytablereader as ptr
+
+AUDIO_ALERT = True
 
 
 class HWSPost:
@@ -18,6 +18,10 @@ class HWSPost:
         self.timestamp = timestamp
         self.price = price
         self.tableexists = tableexists
+
+
+def alert():
+    beepy.beep(sound=4)
 
 
 def animation():
@@ -61,9 +65,9 @@ reddit = praw.Reddit(client_id='oA7oqPSjXGLeAw',
 print('')
 list_of_posts = []  # Created so that we can display only new and unseen posts
 res = []  # res is the list of unduplicated posts.
+
 while True:
     subreddit = reddit.subreddit('hardwareswap')
-
 
     for submission in subreddit.new(limit=10):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
         try:
@@ -115,7 +119,6 @@ while True:
                 r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?\d{1,4}(\.\d{0,2})?\$?( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',
                 re.IGNORECASE)
 
-
             if '|' in post.body:  # we found a table
                 loader = ptr.MarkdownTableTextLoader(text=post.body)
                 # writer = ptw.TableWriterFactory.create_from_format_name("rst")
@@ -149,6 +152,10 @@ while True:
 
             # IF NEW POSTS HAVE BEEN FOUND, PRINT THEM OUT
             if res_length_after - res_length_before > 0:
+                if AUDIO_ALERT:
+                    alert_thread = threading.Thread(target=alert)
+                    alert_thread.start()  # Start audio thread to play in background
+                    # no need to join, it will finish itself
                 difference = res_length_after - res_length_before
                 for element in res[-1 * difference:]:
                     print(element.title + " - " + element.url)
