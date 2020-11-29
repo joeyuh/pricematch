@@ -13,16 +13,10 @@ Unzip the contents of the github download, save all contents to the same folder.
 
 You’ll need to be using some sort of python 3 for this, you’ll probably see ‘3.x.x ‘or ‘3.x’ somewhere. I’m sure you know what this is if you’ve installed python before.
 
-Google on how to install each of python modules l’m talking about.
-Modules you’ll need: 
-
--BeautifulSoup
-
--requests
-
--lxml
-
-(probably gonna make you use the command line in your computer and type ‘pip install requests’ for example. This may be wrong. Follow the instructions.)
+Install the modules listed in requirements.txt
+```commandline
+pip3 install -r requirements.txt
+```
 
 Everything *should* be set up properly.
 The code *should* now work. 
