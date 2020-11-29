@@ -61,9 +61,8 @@ res = [] #res is the list of unduplicated posts.
 while True:
     subreddit = reddit.subreddit('hardwareswap')
 
-    for submission in subreddit.new(limit=100): #REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
+    for submission in subreddit.new(limit=10): #REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
         try:
-            global want
             want = submission.title.split('[W]')[1]
         except:
             continue
@@ -150,7 +149,7 @@ while True:
                         if element.price == '':
                             print('Unable to find price')
                         else:
-                            print(element.price)
+                            print(element.price[:-2])
                     elif element.tableexists == True:
                         print('TABLE FOUND:')
                         for row in range(len(df.index)):
