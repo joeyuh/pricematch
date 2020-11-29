@@ -64,6 +64,7 @@ res = []  # res is the list of unduplicated posts.
 while True:
     subreddit = reddit.subreddit('hardwareswap')
 
+
     for submission in subreddit.new(limit=10):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
         try:
             want = submission.title.split('[W]')[1]
@@ -164,7 +165,7 @@ while True:
                             print(f'{item} - {item_price}')
                     try:
                         if len(element.timestamp) == 0:
-                            print('Could not find any timestamps on imgur/ibb.co')
+                            print('Could not find any timestamps on imgur or ibb.co')
                         elif len(element.timestamp) == 1:
                             print(str(element.timestamp[0]))
                         else:
