@@ -98,14 +98,14 @@ while True:
             res_length_after = len(res)
             # SKIP PROCESSING OF POSTS THAT HAVE ALREADY BEEN PROCESSED
             if res_length_after - res_length_before == 0:
-                # animation()
+                animation()
                 continue
 
             search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
             timestamp_urls = re.finditer(search_string, str(post.body))
             post.timestamp = []
             for match in timestamp_urls:
-                timestamp = match.group(0)[6:]
+                timestamp = match.group(0)
                 post.timestamp.append(timestamp)
                 post.timestamp = uniquify(post.timestamp)
 
@@ -113,18 +113,17 @@ while True:
             price_re = re.compile(
                 r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?\d{1,4}(\.\d{0,2})?\$?( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',
                 re.IGNORECASE)
+
+
             if '|' in post.body:  # we found a table
                 loader = ptr.MarkdownTableTextLoader(text=post.body)
                 # writer = ptw.TableWriterFactory.create_from_format_name("rst")
+
                 for table_data in loader.load():
                     df = table_data.as_dataframe()
 
-                for column in range(
-                        5):  # Find what column prices are in. i is the column's index. Suppose no tables have more than 6.
-                    try:  # Don't know how many columns there are! So we have to try.
-                        prices = price_re.finditer(df.iloc[0, column])
-                    except:
-                        break
+                for column in range(len(df.columns)):  # Find what column prices are in.
+                    prices = price_re.finditer(str(df.iloc[0, column]))
                     try:
                         for price in prices:
                             price_string = price.group(0)
@@ -133,10 +132,14 @@ while True:
                                 pricecolumnindex = column
                                 post.tableexists = True
                                 break
-                    except:  # no prices found, useless af. Raise an error so we will jump to the except: as if no tables found.
-                        raise NameError('No prices found')
-            else:  # no useful tables found
-                prices = price_re.finditer(post_body)
+
+                    except:
+                        # no prices found, useless af. Raise an error so we will jump to the except:
+                        # as if no tables found.
+                        print('No prices found in table')
+
+            if not post.tableexists:  # no useful tables found
+                prices = price_re.finditer(post.body)
                 for price in prices:
                     price_string = price.group(0)
                     identified_price = identifyprice(price_string)
@@ -148,12 +151,12 @@ while True:
                 difference = res_length_after - res_length_before
                 for element in res[-1 * difference:]:
                     print(element.title + " - " + element.url)
-                    if element.tableexists == False:
+                    if not element.tableexists:
                         if element.price == '':
                             print('Unable to find price')
                         else:
                             print(element.price[:-2])
-                    elif element.tableexists == True:
+                    else:
                         print('TABLE FOUND:')
                         for row in range(len(df.index)):
                             item = df.iloc[row, 0]
