@@ -1,6 +1,5 @@
 import praw
 import re
-import requests
 import time
 import pytablereader as ptr
 import pytablewriter as ptw
@@ -20,15 +19,17 @@ class HWSPost:
         self.price = price
         self.tableexists = tableexists
 
+
 def animation():
     dot = "."
     i = 0
     while i <= 10:
-        print("finding new deals"+i*dot)
+        print("finding new deals" + i * dot)
         time.sleep(.05)
         i += 1
         print(
             "\033[A                             \033[A")
+
 
 def uniquify(list1):
     res = []
@@ -36,6 +37,7 @@ def uniquify(list1):
         if i not in res:
             res.append(i)
     return res
+
 
 def identifyprice(price_string):
     price_string = price_string.lower().strip()
@@ -48,6 +50,7 @@ def identifyprice(price_string):
         else:
             return price_string
 
+
 # I HAVE CREATED A NEW REDDIT ACCOUNT. USERNAME = 'pcbeest', PASSWORD = 'whataPassword'.
 reddit = praw.Reddit(client_id='oA7oqPSjXGLeAw',
                      client_secret='rxQEH9FajvtDvr-PoxtjmEvxEKw',
@@ -57,30 +60,31 @@ reddit = praw.Reddit(client_id='oA7oqPSjXGLeAw',
 
 print('')
 list_of_posts = []  # Created so that we can display only new and unseen posts
-res = [] #res is the list of unduplicated posts.
+res = []  # res is the list of unduplicated posts.
 while True:
     subreddit = reddit.subreddit('hardwareswap')
 
-    for submission in subreddit.new(limit=100): #REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
+
+    for submission in subreddit.new(limit=10):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
         try:
             want = submission.title.split('[W]')[1]
         except:
             continue
 
-        if 'paypal' in want.lower(): #aka if it's a selling post
+        if 'paypal' in want.lower():  # aka if it's a selling post
 
-            #CREATE INSTANCE OF CLASS HWSPOST, GIVE IT ATTRIBUTES OF TITLE, BODY, URL.
+            # CREATE INSTANCE OF CLASS HWSPOST, GIVE IT ATTRIBUTES OF TITLE, BODY, URL.
             try:
-                post_items = submission.title.split('[H]')[1].split('[W]')[0]
+                post_title = submission.title.split('[H]')[1].split('[W]')[0]
                 post_body = submission.selftext
                 post_url = submission.url.strip()
 
-                post_items = HWSPost(title=post_items, body=post_body, url=post_url)
-                list_of_posts.append(post_items)
+                post = HWSPost(title=post_title, body=post_body, url=post_url)
+                list_of_posts.append(post)
             except:
                 continue
 
-            #SEE IF POST HAS ALREADY BEEN PROCESSED
+            # SEE IF POST HAS ALREADY BEEN PROCESSED
             res_length_before = len(res)
             for element in list_of_posts:
                 inres = False
@@ -93,64 +97,67 @@ while True:
                     if inres == False:
                         res.append(element)
             res_length_after = len(res)
-            #SKIP PROCESSING OF POSTS THAT HAVE ALREADY BEEN PROCESSED
+            # SKIP PROCESSING OF POSTS THAT HAVE ALREADY BEEN PROCESSED
             if res_length_after - res_length_before == 0:
                 animation()
                 continue
 
-            #FIND TIMESTAMP LINKS IN THE POST'S SOURCE CODE AND ATTRIBUTE THEM TO THE CLASS INSTANCE
-            source = webscraper.scrape_page(post_url)
-            search_string = r'(?i)href="(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
-            timestamp_urls = re.finditer(search_string, str(source))
-            post_items.timestamp = []
+            search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
+            timestamp_urls = re.finditer(search_string, str(post.body))
+            post.timestamp = []
             for match in timestamp_urls:
-                timestamp = match.group(0)[6:]
-                post_items.timestamp.append(timestamp)
-                post_items.timestamp = uniquify(post_items.timestamp)
+                timestamp = match.group(0)
+                post.timestamp.append(timestamp)
+                post.timestamp = uniquify(post.timestamp)
 
-            #FIND PRICES. First, check if there is table, if not, just find prices.
+            # FIND PRICES. First, check if there is table, if not, just find prices.
             price_re = re.compile(
                 r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?\d{1,4}(\.\d{0,2})?\$?( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',
                 re.IGNORECASE)
-            try: #try and find tables. If table, try to find the prices in the table. Otherwise, just pass.
-                post_items.tableexists = False
-                table = source.find_all('table') #source code was found before when we found image links
-                df = pandas.read_html(str(table))[0]
-                for column in range(5): #Find what column prices are in. i is the column's index. Suppose no tables have more than 6.
-                    try: #Don't know how many columns there are! So we have to try.
-                        prices = price_re.finditer(df.iloc[0, column])
-                    except:
-                        break
+
+
+            if '|' in post.body:  # we found a table
+                loader = ptr.MarkdownTableTextLoader(text=post.body)
+                # writer = ptw.TableWriterFactory.create_from_format_name("rst")
+
+                for table_data in loader.load():
+                    df = table_data.as_dataframe()
+
+                for column in range(len(df.columns)):  # Find what column prices are in.
+                    prices = price_re.finditer(str(df.iloc[0, column]))
                     try:
                         for price in prices:
                             price_string = price.group(0)
                             identified_price = identifyprice(price_string)
                             if identified_price != None:
                                 pricecolumnindex = column
-                                post_items.tableexists = True
+                                post.tableexists = True
                                 break
-                    except:  # no prices found, useless af. Raise an error so we will jump to the except: as if no tables found.
-                        raise NameError('No prices found')
-            except: #no useful tables found
-                prices = price_re.finditer(post_body)
+
+                    except:
+                        # no prices found, useless af. Raise an error so we will jump to the except:
+                        # as if no tables found.
+                        print('No prices found in table')
+
+            if not post.tableexists:  # no useful tables found
+                prices = price_re.finditer(post.body)
                 for price in prices:
                     price_string = price.group(0)
                     identified_price = identifyprice(price_string)
                     if identified_price != None:
-                        post_items.price += f'{identified_price}, '
+                        post.price += f'{identified_price}, '
 
-
-            #IF NEW POSTS HAVE BEEN FOUND, PRINT THEM OUT
+            # IF NEW POSTS HAVE BEEN FOUND, PRINT THEM OUT
             if res_length_after - res_length_before > 0:
                 difference = res_length_after - res_length_before
-                for element in res[-1*difference:]:
-                    print(element.title+" - "+element.url)
-                    if element.tableexists == False:
+                for element in res[-1 * difference:]:
+                    print(element.title + " - " + element.url)
+                    if not element.tableexists:
                         if element.price == '':
                             print('Unable to find price')
                         else:
                             print(element.price[:-2])
-                    elif element.tableexists == True:
+                    else:
                         print('TABLE FOUND:')
                         for row in range(len(df.index)):
                             item = df.iloc[row, 0]
@@ -169,5 +176,4 @@ while True:
                     print("found at " + currenttime[11:-7])
                     print('')
 
-    time.sleep(0)    
-
+    time.sleep(0)
