@@ -11,13 +11,14 @@ AUDIO_ALERT = True
 
 
 class HWSPost:
-    def __init__(self, title=None, url=None, body=None, timestamp=None, price='', tableexists=None):
+    def __init__(self, title=None, url=None, body=None, timestamps=None, price='', tableexists=None):
         self.title = title
         self.url = url
         self.body = body
-        self.timestamp = timestamp
+        self.timestamps = timestamps
         self.price = price
         self.tableexists = tableexists
+        self.urls = []  # all urls in a most
 
 
 def alert():
@@ -103,16 +104,26 @@ while True:
             res_length_after = len(res)
             # SKIP PROCESSING OF POSTS THAT HAVE ALREADY BEEN PROCESSED
             if res_length_after - res_length_before == 0:
-                animation()
+                # animation()
                 continue
 
             search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
             timestamp_urls = re.finditer(search_string, str(post.body))
-            post.timestamp = []
+            post.timestamps = []
             for match in timestamp_urls:
                 timestamp = match.group(0)
-                post.timestamp.append(timestamp)
-                post.timestamp = uniquify(post.timestamp)
+                post.timestamps.append(timestamp)
+                post.timestamps = uniquify(post.timestamps)
+
+            all_urls = re.finditer(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,'
+                                   r'}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|('
+                                   r'?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})', str(post.body))
+
+            for match in all_urls:
+                url = str(match.group(0)).replace('(', '').replace(')', '')
+                post.body = post.body.replace(url,'')      # remove all url for better price matching
+                if len(post.timestamps) == 0:  # If we dont have any imgur or ibb link
+                    post.urls.append(url)      # append all links in the most
 
             # FIND PRICES. First, check if there is table, if not, just find prices.
             price_re = re.compile(
@@ -171,12 +182,13 @@ while True:
                             item_price = df.iloc[row, pricecolumnindex]
                             print(f'{item} - {item_price}')
                     try:
-                        if len(element.timestamp) == 0:
-                            print('Could not find any timestamps on imgur or ibb.co')
-                        elif len(element.timestamp) == 1:
-                            print(str(element.timestamp[0]))
+                        if len(element.timestamps) == 0:
+                            print('Could not find any timestamps on imgur or ibb.co, here is all urls in the listing:')
+                            print(element.urls)
+                        elif len(element.timestamps) == 1:
+                            print(str(element.timestamps[0]))
                         else:
-                            print(element.timestamp)
+                            print(element.timestamps)
                     except:
                         pass
                     currenttime = str(datetime.datetime.now())
