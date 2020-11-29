@@ -101,7 +101,7 @@ while True:
                 # animation()
                 continue
 
-            search_string = r'(http(s)?://)?(i.)?(imgur\.com/(a/)?\w{5,7}|imgur.com/gallery/\w{5,7}|ibb.co/.{5,7})'
+            search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
             timestamp_urls = re.finditer(search_string, str(post.body))
             post.timestamp = []
             for match in timestamp_urls:
