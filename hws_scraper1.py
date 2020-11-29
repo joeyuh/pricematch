@@ -61,7 +61,7 @@ res = [] #res is the list of unduplicated posts.
 while True:
     subreddit = reddit.subreddit('hardwareswap')
 
-    for submission in subreddit.new(limit=10): #REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
+    for submission in subreddit.new(limit=100): #REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
         try:
             want = submission.title.split('[W]')[1]
         except:
@@ -100,7 +100,7 @@ while True:
 
             #FIND TIMESTAMP LINKS IN THE POST'S SOURCE CODE AND ATTRIBUTE THEM TO THE CLASS INSTANCE
             source = webscraper.scrape_page(post_url)
-            search_string = r'href="(http(s)?://)?(i.)?(imgur\.com/(a/)?\w{5,7}|imgur.com/gallery/\w{5,7}|ibb.co/.{5,7})'
+            search_string = r'href="(http(s)?://)?(i.)?(imgur\.com/(a/)?[\w\d]{5,7}|imgur.com/gallery/[\w\d]{5,7}|ibb.co/.{5,7})'
             timestamp_urls = re.finditer(search_string, str(source))
             post_items.timestamp = []
             for match in timestamp_urls:
@@ -158,7 +158,7 @@ while True:
                             print(f'{item} - {item_price}')
                     try:
                         if len(element.timestamp) == 0:
-                            print('Could not find any timestamps on imgur/ibb.co')
+                            print('Could not find any timestamps on imgur or ibb.co')
                         elif len(element.timestamp) == 1:
                             print(str(element.timestamp[0]))
                         else:
