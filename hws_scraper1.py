@@ -107,95 +107,95 @@ while True:
                     # animation()
                     continue
 
-            search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
-            timestamp_urls = re.finditer(search_string, str(post.body))
-            post.timestamps = []
-            for match in timestamp_urls:
-                timestamp = match.group(0)
-                post.timestamps.append(timestamp)
-                post.timestamps = uniquify(post.timestamps)
+                search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
+                timestamp_urls = re.finditer(search_string, str(post.body))
+                post.timestamps = []
+                for match in timestamp_urls:
+                    timestamp = match.group(0)
+                    post.timestamps.append(timestamp)
+                    post.timestamps = uniquify(post.timestamps)
 
-                all_urls = re.finditer(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,'
-                                       r'}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|('
-                                       r'?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})', str(post.body))
+                    all_urls = re.finditer(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,'
+                                           r'}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|('
+                                           r'?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})', str(post.body))
 
-                for match in all_urls:
-                    url = str(match.group(0)).replace('(', '').replace(')', '')
-                    post.body = post.body.replace(url, '')  # remove all url for better price matching
-                    if len(post.timestamps) == 0:  # If we dont have any imgur or ibb link
-                        post.urls.append(url)  # append all links in the most
+                    for match in all_urls:
+                        url = str(match.group(0)).replace('(', '').replace(')', '')
+                        post.body = post.body.replace(url, '')  # remove all url for better price matching
+                        if len(post.timestamps) == 0:  # If we dont have any imgur or ibb link
+                            post.urls.append(url)  # append all links in the most
 
-                # FIND PRICES. First, check if there is table, if not, just find prices.
-                price_re = re.compile(
-                    r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?\d{1,4}(\.\d{0,'
-                    r'2})?\$?( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',
-                    re.IGNORECASE)
+                    # FIND PRICES. First, check if there is table, if not, just find prices.
+                    price_re = re.compile(
+                        r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?\d{1,4}(\.\d{0,'
+                        r'2})?\$?( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',
+                        re.IGNORECASE)
 
-                if '|' in post.body:  # we found a table
-                    loader = ptr.MarkdownTableTextLoader(text=post.body)
-                    # writer = ptw.TableWriterFactory.create_from_format_name("rst")
+                    if '|' in post.body:  # we found a table
+                        loader = ptr.MarkdownTableTextLoader(text=post.body)
+                        # writer = ptw.TableWriterFactory.create_from_format_name("rst")
 
-                    for table_data in loader.load():
-                        df = table_data.as_dataframe()
+                        for table_data in loader.load():
+                            df = table_data.as_dataframe()
 
-                    for column in range(len(df.columns)):  # Find what column prices are in.
-                        prices = price_re.finditer(str(df.iloc[0, column]))
-                        try:
-                            for price in prices:
-                                price_string = price.group(0)
-                                identified_price = identifyprice(price_string)
-                                if identified_price != None:
-                                    pricecolumnindex = column
-                                    post.tableexists = True
-                                    break
+                        for column in range(len(df.columns)):  # Find what column prices are in.
+                            prices = price_re.finditer(str(df.iloc[0, column]))
+                            try:
+                                for price in prices:
+                                    price_string = price.group(0)
+                                    identified_price = identifyprice(price_string)
+                                    if identified_price != None:
+                                        pricecolumnindex = column
+                                        post.tableexists = True
+                                        break
 
-                        except:
-                            # no prices found, useless af. Raise an error so we will jump to the except:
-                            # as if no tables found.
-                            print('No prices found in table')
+                            except:
+                                # no prices found, useless af. Raise an error so we will jump to the except:
+                                # as if no tables found.
+                                print('No prices found in table')
 
-                if not post.tableexists:  # no useful tables found
-                    prices = price_re.finditer(post.body)
-                    for price in prices:
-                        price_string = price.group(0)
-                        identified_price = identifyprice(price_string)
-                        if identified_price != None:
-                            post.price += f'{identified_price}, '
+                    if not post.tableexists:  # no useful tables found
+                        prices = price_re.finditer(post.body)
+                        for price in prices:
+                            price_string = price.group(0)
+                            identified_price = identifyprice(price_string)
+                            if identified_price != None:
+                                post.price += f'{identified_price}, '
 
-                # IF NEW POSTS HAVE BEEN FOUND, PRINT THEM OUT
-                if res_length_after - res_length_before > 0:
-                    if AUDIO_ALERT:
-                        alert_thread = threading.Thread(target=alert)
-                        alert_thread.start()  # Start audio thread to play in background
-                        # no need to join, it will finish itself
-                    difference = res_length_after - res_length_before
-                    for element in res[-1 * difference:]:
-                        print(element.title + " - " + element.url)
-                        if not element.tableexists:
-                            if element.price == '':
-                                print('Unable to find price')
+                    # IF NEW POSTS HAVE BEEN FOUND, PRINT THEM OUT
+                    if res_length_after - res_length_before > 0:
+                        if AUDIO_ALERT:
+                            alert_thread = threading.Thread(target=alert)
+                            alert_thread.start()  # Start audio thread to play in background
+                            # no need to join, it will finish itself
+                        difference = res_length_after - res_length_before
+                        for element in res[-1 * difference:]:
+                            print(element.title + " - " + element.url)
+                            if not element.tableexists:
+                                if element.price == '':
+                                    print('Unable to find price')
+                                else:
+                                    print(element.price[:-2])
                             else:
-                                print(element.price[:-2])
-                        else:
-                            print('TABLE FOUND:')
-                            for row in range(len(df.index)):
-                                item = df.iloc[row, 0]
-                                item_price = df.iloc[row, pricecolumnindex]
-                                print(f'{item} - {item_price}')
-                        try:
-                            if len(element.timestamps) == 0:
-                                print('Could not find any timestamps on imgur or ibb.co, here is all urls in the '
-                                      'listing:')
-                                print(element.urls)
-                            elif len(element.timestamps) == 1:
-                                print(str(element.timestamps[0]))
-                            else:
-                                print(element.timestamps)
-                        except:
-                            pass
-                        currenttime = str(datetime.datetime.now())
-                        print("found at " + currenttime[11:-7])
-                        print('')
+                                print('TABLE FOUND:')
+                                for row in range(len(df.index)):
+                                    item = df.iloc[row, 0]
+                                    item_price = df.iloc[row, pricecolumnindex]
+                                    print(f'{item} - {item_price}')
+                            try:
+                                if len(element.timestamps) == 0:
+                                    print('Could not find any timestamps on imgur or ibb.co, here is all urls in the '
+                                          'listing:')
+                                    print(element.urls)
+                                elif len(element.timestamps) == 1:
+                                    print(str(element.timestamps[0]))
+                                else:
+                                    print(element.timestamps)
+                            except:
+                                pass
+                            currenttime = str(datetime.datetime.now())
+                            print("found at " + currenttime[11:-7])
+                            print('')
     except Exception as e:
         print(f'Reddit Error: {e}\n Continuing')
 
