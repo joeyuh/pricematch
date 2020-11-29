@@ -11,10 +11,11 @@ AUDIO_ALERT = True
 
 
 class HWSPost:
-    def __init__(self, title=None, url=None, body=None, timestamps=None, price='', tableexists=None):
+    def __init__(self, title=None, url=None, body=None, author=None, timestamps=None, price='', tableexists=None):
         self.title = title
         self.url = url
         self.body = body
+        self.author = author
         self.timestamps = timestamps
         self.price = price
         self.tableexists = tableexists
@@ -81,10 +82,11 @@ while True:
                 # CREATE INSTANCE OF CLASS HWSPOST, GIVE IT ATTRIBUTES OF TITLE, BODY, URL.
                 try:
                     post_title = submission.title.split('[H]')[1].split('[W]')[0]
-                    post_body = submission.selftext
+                    post_body = submission.selftext.replace(',', '')  # Remove ',' in price tags
                     post_url = submission.url.strip()
+                    post_author = submission.author
 
-                    post = HWSPost(title=post_title, body=post_body, url=post_url)
+                    post = HWSPost(title=post_title, body=post_body, author=post_author, url=post_url)
                     list_of_posts.append(post)
                 except:
                     continue
@@ -131,9 +133,8 @@ while True:
                         r'2})?\$?( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',
                         re.IGNORECASE)
 
-                if '|' in post.body:  # we found a table
+                if '|' in post.body:  # | means we found a table
                     loader = ptr.MarkdownTableTextLoader(text=post.body)
-                    # writer = ptw.TableWriterFactory.create_from_format_name("rst")
 
                     for table_data in loader.load():
                         df = table_data.as_dataframe()
@@ -194,6 +195,7 @@ while True:
                         except:
                             pass
                         currenttime = str(datetime.datetime.now())
+                        print(f'Send A PM:  https://www.reddit.com/message/compose/?to=f{element.author}')
                         print("found at " + currenttime[11:-7])
                         print('')
     except Exception as e:
