@@ -195,10 +195,10 @@ while True:
                         except:
                             pass
                         currenttime = str(datetime.datetime.now())
-                        print(f'Send A PM:  https://www.reddit.com/message/compose/?to=f{element.author}')
+                        print(f'Send A PM:  https://www.reddit.com/message/compose/?to={element.author}')
                         print("found at " + currenttime[11:-7])
                         print('')
     except Exception as e:
         print(f'Reddit Error: {e}\n Continuing')
 
-    time.sleep(0)
+    time.sleep(0.1)
