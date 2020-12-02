@@ -135,25 +135,25 @@ while True:
 
                 if '|' in post.body:  # | means we found a table
                     loader = ptr.MarkdownTableTextLoader(text=post.body)
-
+                    dfs = []
                     for table_data in loader.load():
                         df = table_data.as_dataframe()
+                        dfs.append(df)
 
-                    for column in range(len(df.columns)):  # Find what column prices are in.
-                        prices = price_re.finditer(str(df.iloc[0, column]))
-                        try:
-                            for price in prices:
-                                price_string = price.group(0)
-                                identified_price = identifyprice(price_string)
-                                if identified_price != None:
-                                    pricecolumnindex = column
-                                    post.tableexists = True
-                                    break
-
-                        except:
-                            # no prices found, useless af. Raise an error so we will jump to the except:
-                            # as if no tables found.
-                            print('No prices found in table')
+                        for column in range(len(df.columns)):  # Find what column prices are in.
+                            prices = price_re.finditer(str(df.iloc[0, column]))
+                            try:
+                                for price in prices:
+                                    price_string = price.group(0)
+                                    identified_price = identifyprice(price_string)
+                                    if identified_price != None:
+                                        pricecolumnindex = column
+                                        post.tableexists = True
+                                        break
+                            except:
+                                # no prices found, useless af. Raise an error so we will jump to the except:
+                                # as if no tables found.
+                                print('No prices found in table')
 
                 if not post.tableexists:  # no useful tables found
                     prices = price_re.finditer(post.body)
@@ -179,10 +179,11 @@ while True:
                                 print(element.price[:-2])
                         else:
                             print('TABLE FOUND:')
-                            for row in range(len(df.index)):
-                                item = df.iloc[row, 0]
-                                item_price = df.iloc[row, pricecolumnindex]
-                                print(f'{item} - {item_price}')
+                            for df in dfs:
+                                for row in range(len(df.index)):
+                                    item = df.iloc[row, 0]
+                                    item_price = df.iloc[row, pricecolumnindex]
+                                    print(f'{item} - {item_price}')
                         try:
                             if len(element.timestamps) == 0:
                                 print('Could not find any timestamps on imgur or ibb.co, here is all urls in the '
