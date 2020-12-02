@@ -7,7 +7,7 @@ import beepy
 import praw
 import pytablereader as ptr
 
-AUDIO_ALERT = True
+AUDIO_ALERT = False
 
 
 class HWSPost:
@@ -104,7 +104,7 @@ while True:
                 res_length_after = len(res)
                 # SKIP PROCESSING OF POSTS THAT HAVE ALREADY BEEN PROCESSED
                 if res_length_after - res_length_before == 0:
-                    # animation()
+                    animation()
                     continue
 
                 search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
@@ -125,11 +125,11 @@ while True:
                         if len(post.timestamps) == 0:  # If we dont have any imgur or ibb link
                             post.urls.append(url)  # append all links in the most
 
-                    # FIND PRICES. First, check if there is table, if not, just find prices.
-                    price_re = re.compile(
-                        r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?\d{1,4}(\.\d{0,'
-                        r'2})?\$?( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',
-                        re.IGNORECASE)
+                # FIND PRICES.
+                price_re = re.compile(
+                    r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?(?<!\dx)\d{1,4}(\.\d{0,'
+                    r'2})?\$?( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',
+                    re.IGNORECASE)
 
                 if '|' in post.body:  # we found a table
                     loader = ptr.MarkdownTableTextLoader(text=post.body)
@@ -160,7 +160,7 @@ while True:
                         price_string = price.group(0)
                         identified_price = identifyprice(price_string)
                         if identified_price != None:
-                            post.price += f'{identified_price}, '
+                            post.price += f'{identified_price};  '
 
                 # IF NEW POSTS HAVE BEEN FOUND, PRINT THEM OUT
                 if res_length_after - res_length_before > 0:
