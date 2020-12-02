@@ -71,7 +71,7 @@ res = []  # res is the list of unduplicated posts.
 while True:
     subreddit = reddit.subreddit('hardwareswap')
     try:  # Praw might throw errors, we want to ignore them
-        for submission in subreddit.new(limit=10):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
+        for submission in subreddit.new(limit=20):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
             try:
                 want = submission.title.split('[W]')[1]
             except:
@@ -129,8 +129,10 @@ while True:
 
                 # FIND PRICES.
                 price_re = re.compile(
-                    r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?(?<!\dx)\d{1,4}(\.\d{0,'
-                    r'2})?\$?( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',
+                    r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?(?<!\dx)' #search for keywords, but not nxn (RAM)
+                    r'\d{1,4}(\.\d{0,2})?\$?' #search for numbers and decimal places, and dollar sign after the number.
+                    r'(?!\+ bronze|\+ gold|\+ silver|\+ certified|\+ platinum)' #don't match 80+ ratings.
+                    r'( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*', #match these keywords
                     re.IGNORECASE)
 
                 if '|' in post.body:  # | means we found a table
