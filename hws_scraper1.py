@@ -73,7 +73,12 @@ while True:
     try:  # Praw might throw errors, we want to ignore them
         for submission in subreddit.new(limit=20):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
             try:
-                want = submission.title.split('[W]')[1]
+                h = submission.title.lower().find('[h]')
+                w = submission.title.lower().find('[w]')
+                if w > h:
+                    want = submission.title.lower().split('[w]')[1]
+                else:
+                    want = submission.title.lower().split('[h]')[0]
             except:
                 continue
 
