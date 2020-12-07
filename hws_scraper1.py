@@ -7,16 +7,19 @@ import beepy
 import praw
 import pytablereader as ptr
 
+LOCAL_TIME_ZONE = datetime.datetime.now().astimezone().tzinfo
 AUDIO_ALERT = True
 
 
 class HWSPost:
-    def __init__(self, title=None, url=None, body=None, author=None, timestamps=None, price='', tableexists=None):
+    def __init__(self, title=None, url=None, body=None, author=None, timestamps=None, created=None, price='',
+                 tableexists=None):
         self.title = title
         self.url = url
         self.body = body
         self.author = author
         self.timestamps = timestamps
+        self.created = created
         self.price = price
         self.tableexists = tableexists
         self.urls = []  # all urls in a most
@@ -25,16 +28,6 @@ class HWSPost:
 def alert():
     beepy.beep(sound=4)
 
-
-def animation():
-    dot = "."
-    i = 0
-    while i <= 10:
-        print("finding new deals" + i * dot)
-        time.sleep(.05)
-        i += 1
-        print(
-            "\033[A                             \033[A")
 
 def identifyprice(price_string):
     price_string = price_string.lower().strip()
@@ -60,7 +53,8 @@ print('HWS Scraper Version 2020-12-07')
 while True:
     try:  # Praw might throw errors, we want to ignore them
         subreddit = reddit.subreddit('hardwareswap')
-        for submission in subreddit.stream.submissions(skip_existing=True, pause_after=0):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
+        for submission in subreddit.stream.submissions(skip_existing=True,
+                                                       pause_after=0):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
             if submission is None:
                 continue
             try:
@@ -81,19 +75,18 @@ while True:
                     post_body = submission.selftext.replace(',', '')  # Remove ',' in price tags
                     post_url = submission.url.strip()
                     post_author = submission.author
-
-                    post = HWSPost(title=post_title, body=post_body, author=post_author, url=post_url)
+                    post_created = datetime.datetime.utcfromtimestamp(submission.created_utc).replace(
+                        tzinfo=datetime.timezone.utc).astimezone(tz=LOCAL_TIME_ZONE)
+                    post = HWSPost(title=post_title, body=post_body, author=post_author, url=post_url, created=post_created)
                 except:
                     continue
 
-
-                search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,8}|ibb.co/.{5,7})'
+                search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
                 timestamp_urls = re.finditer(search_string, str(post.body))
-                post.timestamps = []
+                post.timestamps = set()
                 for match in timestamp_urls:
                     timestamp = match.group(0)
-                    post.timestamps.append(timestamp)
-                    post.timestamps = uniquify(post.timestamps)
+                    post.timestamps.add(timestamp)
 
                     all_urls = re.finditer(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,'
                                            r'}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|('
@@ -109,7 +102,7 @@ while True:
                 # FIND PRICES.
                 price_re = re.compile(
                     r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?(?<!\dx)'  # search for keywords, but not nxn (RAM)
-                    r'\d{1,4}(\.\d{1,2})?\$?'  # search for numbers and decimal places, and dollar sign after the number.
+                    r'\d{1,4}(\.\d{0,2})?\$?'  # search for numbers and decimal places, and dollar sign after the number.
                     r'(?!\+ bronze|\+ gold|\+ silver|\+ certified|\+ platinum)'  # don't match 80+ ratings.
                     r'( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',  # match these keywords
                     re.IGNORECASE)
@@ -171,9 +164,10 @@ while True:
                         print(post.timestamps)
                 except:
                     pass
-                currenttime = str(datetime.datetime.now())
                 print(f'Send A PM:  https://www.reddit.com/message/compose/?to={post.author}')
-                print("found at " + currenttime[11:-7])
+                print("Created at " + str(post.created)[11:-6])
+                latency = datetime.datetime.now() - post.created.replace(tzinfo=None)
+                print(f'Latency {latency.total_seconds()} seconds')
                 print('')
     except Exception as e:
         print(f'Reddit Error: {e}\n Continuing')
