@@ -36,15 +36,6 @@ def animation():
         print(
             "\033[A                             \033[A")
 
-
-def uniquify(list1):
-    res = []
-    for i in list1:
-        if i not in res:
-            res.append(i)
-    return res
-
-
 def identifyprice(price_string):
     price_string = price_string.lower().strip()
     try:  # If the string only has numbers, it's an irrelevant random number
@@ -96,7 +87,7 @@ while True:
                     continue
 
 
-                search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
+                search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,8}|ibb.co/.{5,7})'
                 timestamp_urls = re.finditer(search_string, str(post.body))
                 post.timestamps = []
                 for match in timestamp_urls:
@@ -118,7 +109,7 @@ while True:
                 # FIND PRICES.
                 price_re = re.compile(
                     r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?(?<!\dx)'  # search for keywords, but not nxn (RAM)
-                    r'\d{1,4}(\.\d{0,2})?\$?'  # search for numbers and decimal places, and dollar sign after the number.
+                    r'\d{1,4}(\.\d{1,2})?\$?'  # search for numbers and decimal places, and dollar sign after the number.
                     r'(?!\+ bronze|\+ gold|\+ silver|\+ certified|\+ platinum)'  # don't match 80+ ratings.
                     r'( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',  # match these keywords
                     re.IGNORECASE)
