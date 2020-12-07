@@ -7,7 +7,7 @@ import beepy
 import praw
 import pytablereader as ptr
 
-AUDIO_ALERT = False
+AUDIO_ALERT = True
 
 
 class HWSPost:
@@ -64,14 +64,14 @@ reddit = praw.Reddit(client_id='oA7oqPSjXGLeAw',
                      username='pcbeest',
                      password='whataPassword')
 
-print('')
-list_of_posts = []  # Created so that we can display only new and unseen posts
-res = []  # res is the list of unduplicated posts.
+print('HWS Scraper Version 2020-12-07')
 
 while True:
-    subreddit = reddit.subreddit('hardwareswap')
     try:  # Praw might throw errors, we want to ignore them
-        for submission in subreddit.new(limit=20):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
+        subreddit = reddit.subreddit('hardwareswap')
+        for submission in subreddit.stream.submissions(skip_existing=True, pause_after=0):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
+            if submission is None:
+                continue
             try:
                 h = submission.title.lower().find('[h]')
                 w = submission.title.lower().find('[w]')
@@ -92,27 +92,9 @@ while True:
                     post_author = submission.author
 
                     post = HWSPost(title=post_title, body=post_body, author=post_author, url=post_url)
-                    list_of_posts.append(post)
                 except:
                     continue
 
-                # SEE IF POST HAS ALREADY BEEN PROCESSED
-                res_length_before = len(res)
-                for element in list_of_posts:
-                    inres = False
-                    if len(res) == 0:
-                        res.append(element)
-                    elif len(res) != 0:
-                        for item in res:
-                            if element.title == item.title:
-                                inres = True
-                        if inres == False:
-                            res.append(element)
-                res_length_after = len(res)
-                # SKIP PROCESSING OF POSTS THAT HAVE ALREADY BEEN PROCESSED
-                if res_length_after - res_length_before == 0:
-                    animation()
-                    continue
 
                 search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
                 timestamp_urls = re.finditer(search_string, str(post.body))
@@ -124,7 +106,8 @@ while True:
 
                     all_urls = re.finditer(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,'
                                            r'}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|('
-                                           r'?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})', str(post.body))
+                                           r'?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})',
+                                           str(post.body))
 
                     for match in all_urls:
                         url = str(match.group(0)).replace('(', '').replace(')', '')
@@ -134,10 +117,10 @@ while True:
 
                 # FIND PRICES.
                 price_re = re.compile(
-                    r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?(?<!\dx)' #search for keywords, but not nxn (RAM)
-                    r'\d{1,4}(\.\d{0,2})?\$?' #search for numbers and decimal places, and dollar sign after the number.
-                    r'(?!\+ bronze|\+ gold|\+ silver|\+ certified|\+ platinum)' #don't match 80+ ratings.
-                    r'( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*', #match these keywords
+                    r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?(?<!\dx)'  # search for keywords, but not nxn (RAM)
+                    r'\d{1,4}(\.\d{0,2})?\$?'  # search for numbers and decimal places, and dollar sign after the number.
+                    r'(?!\+ bronze|\+ gold|\+ silver|\+ certified|\+ platinum)'  # don't match 80+ ratings.
+                    r'( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',  # match these keywords
                     re.IGNORECASE)
 
                 if '|' in post.body:  # | means we found a table
@@ -170,43 +153,36 @@ while True:
                         if identified_price != None:
                             post.price += f'{identified_price};  '
 
-                # IF NEW POSTS HAVE BEEN FOUND, PRINT THEM OUT
-                if res_length_after - res_length_before > 0:
-                    if AUDIO_ALERT:
-                        alert_thread = threading.Thread(target=alert)
-                        alert_thread.start()  # Start audio thread to play in background
-                        # no need to join, it will finish itself
-                    difference = res_length_after - res_length_before
-                    for element in res[-1 * difference:]:
-                        print(element.title + " - " + element.url)
-                        if not element.tableexists:
-                            if element.price == '':
-                                print('Unable to find price')
-                            else:
-                                print(element.price[:-2])
-                        else:
-                            print('TABLE FOUND:')
-                            for df in dfs:
-                                for row in range(len(df.index)):
-                                    item = df.iloc[row, 0]
-                                    item_price = df.iloc[row, pricecolumnindex]
-                                    print(f'{item} - {item_price}')
-                        try:
-                            if len(element.timestamps) == 0:
-                                print('Could not find any timestamps on imgur or ibb.co, here is all urls in the '
-                                      'listing:')
-                                print(element.urls)
-                            elif len(element.timestamps) == 1:
-                                print(str(element.timestamps[0]))
-                            else:
-                                print(element.timestamps)
-                        except:
-                            pass
-                        currenttime = str(datetime.datetime.now())
-                        print(f'Send A PM:  https://www.reddit.com/message/compose/?to={element.author}')
-                        print("found at " + currenttime[11:-7])
-                        print('')
+                if AUDIO_ALERT:
+                    alert_thread = threading.Thread(target=alert)
+                    alert_thread.start()  # Start audio thread to play in background
+                print(post.title + " - " + post.url)
+                if not post.tableexists:
+                    if post.price == '':
+                        print('Unable to find price')
+                    else:
+                        print(post.price[:-2])
+                else:
+                    print('TABLE FOUND:')
+                    for df in dfs:
+                        for row in range(len(df.index)):
+                            item = df.iloc[row, 0]
+                            item_price = df.iloc[row, pricecolumnindex]
+                            print(f'{item} - {item_price}')
+                try:
+                    if len(post.timestamps) == 0:
+                        print('Could not find any timestamps on imgur or ibb.co, here is all urls in the '
+                              'listing:')
+                        print(post.urls)
+                    elif len(post.timestamps) == 1:
+                        print(str(post.timestamps[0]))
+                    else:
+                        print(post.timestamps)
+                except:
+                    pass
+                currenttime = str(datetime.datetime.now())
+                print(f'Send A PM:  https://www.reddit.com/message/compose/?to={post.author}')
+                print("found at " + currenttime[11:-7])
+                print('')
     except Exception as e:
         print(f'Reddit Error: {e}\n Continuing')
-
-    time.sleep(0.1)
