@@ -2,13 +2,14 @@ import datetime
 import re
 import threading
 import time
-
+import os
 import beepy
 import praw
 import pytablereader as ptr
+import hwsscrapernotifier
 
 LOCAL_TIME_ZONE = datetime.datetime.now().astimezone().tzinfo
-AUDIO_ALERT = True
+AUDIO_ALERT = False
 
 
 class HWSPost:
@@ -103,7 +104,7 @@ while True:
                 price_re = re.compile(
                     r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?(?<!\dx)'  # search for keywords, but not nxn (RAM)
                     r'\d{1,4}(\.\d{0,2})?\$?'  # search for numbers and decimal places, and dollar sign after the number.
-                    r'(?!\+ bronze|\+ gold|\+ silver|\+ certified|\+ platinum)'  # don't match 80+ ratings.
+                    r'(?!\+ bronze|\+ gold|\+ silver|\+ certified|\+ platinum|ghz )'  # don't match 80+ ratings.
                     r'( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',  # match these keywords
                     re.IGNORECASE)
 
@@ -137,15 +138,14 @@ while True:
                         if identified_price != None:
                             post.price += f'{identified_price};  '
 
-                if AUDIO_ALERT:
-                    alert_thread = threading.Thread(target=alert)
-                    alert_thread.start()  # Start audio thread to play in background
                 print(post.title + " - " + post.url)
                 if not post.tableexists:
                     if post.price == '':
-                        print('Unable to find price')
+                        post.price = "Unable to find price"
+                        print(post.price)
                     else:
-                        print(post.price[:-2])
+                        post.price = post.price[:-2]  # Added an extra 2 characters at the end, delete them
+                        print(post.price)
                 else:
                     print('TABLE FOUND:')
                     for df in dfs:
@@ -166,6 +166,11 @@ while True:
                     pass
                 print(f'Send A PM:  https://www.reddit.com/message/compose/?to={post.author}')
                 print("Created at " + str(post.created)[11:-6])
+
+                hwsscrapernotifier.notify(title=post.title, subtitle=post.price, message=post.body[:10], url=post.url)
+                if AUDIO_ALERT:
+                    alert_thread = threading.Thread(target=alert)
+                    alert_thread.start()  # Start audio thread to play in background
                 latency = datetime.datetime.now() - post.created.replace(tzinfo=None)
                 print(f'Latency {latency.total_seconds()} seconds')
                 print('')
