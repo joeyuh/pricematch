@@ -13,12 +13,14 @@ AUDIO_ALERT = False
 
 
 class HWSPost:
-    def __init__(self, title=None, url=None, body=None, author=None, timestamps=None, created=None, price='',
+    def __init__(self, title=None, url=None, body=None, author=None, trades=None, timestamps=None, created=None,
+                 price='',
                  tableexists=None):
         self.title = title
         self.url = url
         self.body = body
         self.author = author
+        self.trades = trades
         self.timestamps = timestamps
         self.created = created
         self.price = price
@@ -49,7 +51,7 @@ reddit = praw.Reddit(client_id='oA7oqPSjXGLeAw',
                      username='pcbeest',
                      password='whataPassword')
 
-print('HWS Scraper Version 2020-12-07')
+print('HWS Scraper Version 2020-12-10')
 
 while True:
     try:  # Praw might throw errors, we want to ignore them
@@ -76,9 +78,11 @@ while True:
                     post_body = submission.selftext.replace(',', '')  # Remove ',' in price tags
                     post_url = submission.url.strip()
                     post_author = submission.author
+                    post_trades = submission.author_flair_text
                     post_created = datetime.datetime.utcfromtimestamp(submission.created_utc).replace(
                         tzinfo=datetime.timezone.utc).astimezone(tz=LOCAL_TIME_ZONE)
-                    post = HWSPost(title=post_title, body=post_body, author=post_author, url=post_url, created=post_created)
+                    post = HWSPost(title=post_title, body=post_body, author=post_author, trades=post_trades,
+                                   url=post_url, created=post_created)
                 except:
                     continue
 
@@ -165,6 +169,7 @@ while True:
                 except:
                     pass
                 print(f'Send A PM:  https://www.reddit.com/message/compose/?to={post.author}')
+                print(f'Author Trades: {post.trades}')
                 print("Created at " + str(post.created)[11:-6])
 
                 hwsscrapernotifier.notify(title=post.title, subtitle=post.price, message=post.body[:10], url=post.url)
