@@ -105,7 +105,7 @@ while True:
                     r'(bought for |sold for |asking( for)? |selling for |shipped |for |\$(\s)?)?(?<!\dx)'  # search for keywords, but not nxn (RAM)
                     r'\d{1,4}(\.\d{0,2})?\$?'  # search for numbers and decimal places, and dollar sign after the number.
                     r'(?!\+ bronze|\+ gold|\+ silver|\+ certified|\+ platinum|ghz | minute| hour| day| week| month| year)'  # don't match 80+ ratings.
-                    r'( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',  # match these keywords
+                    r'(\$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',  # match these keywords
                     re.IGNORECASE)
 
                 if '|' in post.body:  # | means we found a table
