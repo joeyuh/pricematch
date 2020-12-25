@@ -166,8 +166,11 @@ while True:
                     pass
                 print(f'Send A PM:  https://www.reddit.com/message/compose/?to={post.author}')
                 print("Created at " + str(post.created)[11:-6])
-
-                hwsscrapernotifier.notify(title=post.title, subtitle=post.price, message=post.body[:10], url=post.url)
+                
+                if len(post.title) >= 20:
+                    hwsscrapernotifier.notify(title=post.title[:35]+'...', subtitle='...'+post.title[35:], message=post.price, url=post.url)
+                else:
+                    hwsscrapernotifier.notify(title=post.title, subtitle=post.price, message='...', url=post.url)
                 if AUDIO_ALERT:
                     alert_thread = threading.Thread(target=alert)
                     alert_thread.start()  # Start audio thread to play in background
