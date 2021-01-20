@@ -6,7 +6,7 @@ import os
 import beepy
 import praw
 import pytablereader as ptr
-import hwsscrapernotifier
+from sysnotifier import *
 
 LOCAL_TIME_ZONE = datetime.datetime.now().astimezone().tzinfo
 AUDIO_ALERT = False
@@ -55,6 +55,7 @@ print('HWS Scraper Version 2020-12-10')
 
 while True:
     try:  # Praw might throw errors, we want to ignore them
+        notifier = SysNotifier()
         subreddit = reddit.subreddit('hardwareswap')
         for submission in subreddit.stream.submissions(skip_existing=True,
                                                        pause_after=0):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
@@ -69,6 +70,7 @@ while True:
                     want = submission.title.lower().split('[h]')[0]
             except:
                 continue
+
 
             if 'paypal' in want.lower():  # aka if it's a selling post
 
@@ -93,16 +95,16 @@ while True:
                     timestamp = match.group(0)
                     post.timestamps.add(timestamp)
 
-                    all_urls = re.finditer(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,'
-                                           r'}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|('
-                                           r'?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})',
-                                           str(post.body))
+                all_urls = re.finditer(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,'
+                                        r'}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|('
+                                       r'?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})',
+                                       str(post.body))
 
-                    for match in all_urls:
-                        url = str(match.group(0)).replace('(', '').replace(')', '')
-                        post.body = post.body.replace(url, '')  # remove all url for better price matching
-                        if len(post.timestamps) == 0:  # If we dont have any imgur or ibb link
-                            post.urls.append(url)  # append all links in the most
+                for match in all_urls:
+                    url = str(match.group(0)).replace('(', '').replace(')', '')
+                    post.body = post.body.replace(url, '')  # remove all url for better price matching
+                    if len(post.timestamps) == 0:  # If we dont have any imgur or ibb link
+                        post.urls.append(url)  # append all links in the most
 
                 # FIND PRICES.
                 price_re = re.compile(
@@ -157,6 +159,7 @@ while True:
                             item = df.iloc[row, 0]
                             item_price = df.iloc[row, pricecolumnindex]
                             print(f'{item} - {item_price}')
+
                 try:
                     if len(post.timestamps) == 0:
                         print('Could not find any timestamps on imgur or ibb.co, here is all urls in the '
@@ -172,7 +175,7 @@ while True:
                 print(f'Author Trades: {post.trades}')
                 print("Created at " + str(post.created)[11:-6])
 
-                hwsscrapernotifier.notify(title=post.title, subtitle=post.price, message=post.body[:10], url=post.url)
+                notifier.notify(title=post.title, subtitle=post.price, message=post.body[:10], url=post.url)
                 if AUDIO_ALERT:
                     alert_thread = threading.Thread(target=alert)
                     alert_thread.start()  # Start audio thread to play in background
