@@ -41,7 +41,17 @@ class SysNotifier:
         if os.path.exists(test_path):
             self.notifier_path = test_path
         return_code = 0xFFFF
-        if self.os_type == 1:
+        if self.os_type == 0:
+            try:
+                toaster = ToastNotifier()
+                toaster.show_toast(title='Test', msg='Test Test',
+                                   callback_on_click=lambda: webbrowser.open('http://google.com'))
+                return_code = 0
+            except Exception as e:
+                print('win10toast threw an error. Did you install the original version? A modified one is required')
+                print(e)
+
+        elif self.os_type == 1:
             return_code = os.system(
                 f"""{self.notifier_path} -title 'Test' -subtitle 'Test' -message 'Test' -open 'https://google.com'""")
         elif self.os_type == 2:
@@ -77,7 +87,7 @@ class SysNotifier:
                 self.test()
             else:
                 self.disable()
-        elif self.os_type == 2 and not windows_import:
+        elif self.os_type == 0 and not windows_import:
             print('Supported notification method for Windows: a modified version of win10toast')
             print('Install with:\n')
             print('pip install git+https://github.com/Charnelx/Windows-10-Toast-Notifications.git#egg=win10toast\n')
