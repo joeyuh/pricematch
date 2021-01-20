@@ -90,7 +90,7 @@ class SysNotifier:
         elif self.os_type == 0 and not windows_import:
             print('Supported notification method for Windows: a modified version of win10toast')
             print('Install with:\n')
-            print('pip install git+https://github.com/Charnelx/Windows-10-Toast-Notifications.git#egg=win10toast\n')
+            print('pip install git+https://github.com/MaliciousFiles/Windows-10-Toast-Notifications.git#egg=win10toast\n')
             print('If you choose not to install, notification will be disabled')
             if input('Enter yes and the program will terminate, then install and restart the program: ') == 'yes':
                 exit(0)
