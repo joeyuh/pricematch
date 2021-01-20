@@ -18,6 +18,8 @@ class SysNotifier:
     def __init__(self):
         sysname = platform.system()
         self.disabled = os.path.exists('disable_notification.txt')
+        if self.disabled:
+            return
         self.notifier_path = 'terminal-notifier'  # Default to system wide installation
         if sysname.lower() == 'windows':
             self.os_type = 0
@@ -27,7 +29,7 @@ class SysNotifier:
             self.os_type = 2
         else:
             self.disabled = True
-            print("Unsupported OS")
+            print("Unsupported OS for notification")
             return
 
         self.test()
@@ -43,7 +45,9 @@ class SysNotifier:
             return_code = os.system(
                 f"""{self.notifier_path} -title 'Test' -subtitle 'Test' -message 'Test' -open 'https://google.com'""")
         elif self.os_type == 2:
-            pass
+            print('Linux support yet to be added')
+            self.disable()
+            return
 
         # os.system('command') returns a 16 bit number, which first 8 bits from left(lsb) talks about signal used by
         # os to close the command, Next 8 bits talks about return code of command.
@@ -68,14 +72,11 @@ class SysNotifier:
                 urllib.request.urlretrieve(url, path)
                 os.system(f'unzip -o -q {path}')
                 os.remove(path)
+                os.remove('README.markdown')
                 print('Retesting')
                 self.test()
             else:
-                self.disabled = True
-                print('Notification will be disabled')
-                with open('disable_notification.txt', 'w') as f:
-                    f.write('Anything')
-                print('Delete disable_notification.txt to re-enable notification')
+                self.disable()
         elif self.os_type == 2 and not windows_import:
             print('Supported notification method for Windows: a modified version of win10toast')
             print('Install with:\n')
@@ -84,17 +85,21 @@ class SysNotifier:
             if input('Enter yes and the program will terminate, then install and restart the program: ') == 'yes':
                 exit(0)
             else:
-                self.disabled = True
-                print('Notification will be disabled')
-                with open('disable_notification.txt', 'w') as f:
-                    f.write('Anything')
-                print('Delete disable_notification.txt to re-enable notification')
+                self.disable()
+
+    def disable(self):
+        self.disabled = True
+        print('Notification will be disabled')
+        with open('disable_notification.txt', 'w') as f:
+            f.write('Anything')
+        print('Delete disable_notification.txt to re-enable notification')
 
     def notify(self, title, subtitle, message, url):
-        if self.os_type == 1:
-            os.system(
-                f"""{self.notifier_path} -title '{title}' -subtitle '{subtitle}' -message '{message}' -open '{url}'""")
-        else:
-            toaster = ToastNotifier()
-            toaster.show_toast(title=title, msg=subtitle + " " + message,
-                               callback_on_click=lambda: webbrowser.open(url))
+        if not self.disabled:
+            if self.os_type == 1:
+                os.system(
+                    f"""{self.notifier_path} -title '{title}' -subtitle '{subtitle}' -message '{message}' -open '{url}'""")
+            elif self.os_type == 0:
+                toaster = ToastNotifier()
+                toaster.show_toast(title=title, msg=subtitle + " " + message,
+                                   callback_on_click=lambda: webbrowser.open(url))
