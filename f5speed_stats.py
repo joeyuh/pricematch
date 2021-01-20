@@ -28,7 +28,7 @@ comment_data = pd.DataFrame(
 post_data = pd.DataFrame(
     columns=['author', 'created_utc', 'post_title', 'post_type', 'author_trades', 'total_comment',
              'first_level_replies', 'permalink', 'id', 'post_score', 'post_upvote_ratio', 'hwsbot_response_time',
-             'content'])
+             'is_post_deleted', 'content'])
 post_count = 0
 display_total_count = 0
 start_epoch = int(datetime.datetime(2020, 7, 1).timestamp())
@@ -41,53 +41,65 @@ for submission in api.search_submissions(after=start_epoch,
         continue
     if submission.num_comments > 0:
         submission.comment_sort = "old"
-        comments_list = submission.comments.list()
-        total_comments = len(comments_list)
+
+        total_comments = len(submission.comments)
         author_trades = 0
+
         if submission.author_flair_text and submission.author_flair_text != 'Bot':
             removed = submission.author_flair_text.replace('Trades: ', '')
             if removed.isdigit():
                 author_trades = int(removed)
+
         seen_hwsbot = False
         first_user_comment_seen = False
+        is_post_deleted = False
         bot_latency = math.nan
 
-        for comment in comments_list:
+        if str(submission.selftext) == '[removed]':
+            is_post_deleted = True
+
+        for comment in submission.comments:
             try:
                 author_trades = 0
                 if comment.author_flair_text and comment.author_flair_text != 'Bot':
                     author_trades = int(comment.author_flair_text.replace('Trades: ', ''))
                 latency = comment.created_utc - submission.created_utc
 
-                if comment.is_submitter or comment.author == 'AutoModerator':
+                if comment.is_submitter:
                     continue
-                if comment.author == 'hwsbot':
+                if comment.author == 'hwsbot' or comment.author == 'AutoModerator':
                     post_count += 1
                     seen_hwsbot = True
                     bot_latency = latency
                     hwsbot_response_time.at[post_count] = latency
+                    if 'remove' in comment.body.lower():
+                        is_post_deleted = True
                     # if first_user_comment_seen:  # we seen first user comment and hwsbot, breaking
                     #     break
                 else:
 
-                    comment_data = comment_data.append(
-                        {'latency': latency, 'author': str(comment.author),
-                         'comment_created_utc': comment.created_utc,
-                         'faster_than_hwsbot': int(not seen_hwsbot),
-                         'is_first_comment': int(not first_user_comment_seen),
-                         'post_type': submission.link_flair_text,
-                         'author_trades': author_trades,
-                         'total_comment': submission.num_comments,
-                         'first_level_replies': total_comments,
-                         'comment_permalink': 'https://www.reddit.com' + comment.permalink,
-                         'post_title': submission.title,
-                         'post_id': submission.id,
-                         'comment_score': comment.score,
-                         'post_score': submission.score,
-                         'post_upvote_ratio': submission.upvote_ratio,
-                         'content': comment.body}, ignore_index=True)
+                    comment_data = comment_data.append({
+                        'latency': latency, 'author': str(comment.author),
+                        'comment_created_utc': comment.created_utc,
+                        'faster_than_hwsbot': int(not seen_hwsbot),
+                        'is_first_comment': int(not first_user_comment_seen),
+                        'post_type': submission.link_flair_text,
+                        'author_trades': author_trades,
+                        'total_comment': submission.num_comments,
+                        'first_level_replies': total_comments,
+                        'comment_permalink': 'https://www.reddit.com' + comment.permalink,
+                        'post_title': submission.title,
+                        'post_id': submission.id,
+                        'comment_score': comment.score,
+                        'post_score': submission.score,
+                        'post_upvote_ratio': submission.upvote_ratio,
+                        'is_post_deleted': int(is_post_deleted),
+                        'content': str(comment.body)
+                    }, ignore_index=True)
                     first_user_comment_seen = True
-                    print(f'{display_total_count}: Author: {comment.author} Body: {comment.body} Seen hwsbot? {seen_hwsbot}')
+                    print(
+                        f'{display_total_count}: Author: {comment.author} Body: {comment.body} UTC: '
+                        f'{comment.created_utc} Seen hwsbot? {seen_hwsbot}')
                     # if not faster_than_hwsbot:  # we seen hwsbot since first comment is slower than hwsbot, breaking
                     #     break
             except Exception as e:
