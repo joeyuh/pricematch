@@ -45,7 +45,9 @@ for submission in api.search_submissions(after=start_epoch,
         total_comments = len(comments_list)
         author_trades = 0
         if submission.author_flair_text and submission.author_flair_text != 'Bot':
-            author_trades = int(submission.author_flair_text.replace('Trades: ', ''))
+            removed = submission.author_flair_text.replace('Trades: ', '')
+            if removed.isdigit():
+                author_trades = int(removed)
         seen_hwsbot = False
         first_user_comment_seen = False
         bot_latency = math.nan
