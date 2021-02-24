@@ -1,9 +1,10 @@
-import os
+import subprocess
 import platform
 import urllib.request
 import pathlib
 import ssl
 import webbrowser
+import os
 
 windows_import = True
 
@@ -19,6 +20,8 @@ class SysNotifier:
         sysname = platform.system()
         self.disabled = os.path.exists('disable_notification.txt')
         if self.disabled:
+            print(
+                "System Notification is set to globally disabled, you can enable by deleting disable_notification.txt")
             return
         self.notifier_path = 'terminal-notifier'  # Default to system wide installation
         if sysname.lower() == 'windows':
@@ -90,7 +93,8 @@ class SysNotifier:
         elif self.os_type == 0 and not windows_import:
             print('Supported notification method for Windows: a modified version of win10toast')
             print('Install with:\n')
-            print('pip install git+https://github.com/MaliciousFiles/Windows-10-Toast-Notifications.git#egg=win10toast\n')
+            print(
+                'pip install git+https://github.com/MaliciousFiles/Windows-10-Toast-Notifications.git#egg=win10toast\n')
             print('If you choose not to install, notification will be disabled')
             if input('Enter yes and the program will terminate, then install and restart the program: ') == 'yes':
                 exit(0)
@@ -104,12 +108,12 @@ class SysNotifier:
             f.write('Anything')
         print('Delete disable_notification.txt to re-enable notification')
 
-    def notify(self, title, subtitle, message, url):
-        if not self.disabled:
-            if self.os_type == 1:
-                os.system(
-                    f"""{self.notifier_path} -title '{title}' -subtitle '{subtitle}' -message '{message}' -open '{url}'""")
-            elif self.os_type == 0:
-                toaster = ToastNotifier()
-                toaster.show_toast(title=title, msg=subtitle + " " + message,
-                                   callback_on_click=lambda: webbrowser.open(url))
+    @staticmethod
+    def notify(os_type, title, subtitle, message, url, notifier_path=None):
+        if os_type == 1:
+            os.system(
+                f"""{notifier_path} -title '{title}' -subtitle '{subtitle}' -message '{message}' -open '{url}'""")
+        elif os_type == 0:
+            toaster = ToastNotifier()
+            toaster.show_toast(title=title, msg=subtitle + " " + message,
+                               callback_on_click=lambda: webbrowser.open(url))

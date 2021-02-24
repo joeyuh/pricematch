@@ -9,7 +9,7 @@ import pytablereader as ptr
 from sysnotifier import *
 
 LOCAL_TIME_ZONE = datetime.datetime.now().astimezone().tzinfo
-AUDIO_ALERT = False
+AUDIO_ALERT = True
 
 
 class HWSPost:
@@ -71,7 +71,6 @@ while True:
             except:
                 continue
 
-
             if 'paypal' in want.lower():  # aka if it's a selling post
 
                 # CREATE INSTANCE OF CLASS HWSPOST, GIVE IT ATTRIBUTES OF TITLE, BODY, URL.
@@ -85,7 +84,10 @@ while True:
                         tzinfo=datetime.timezone.utc).astimezone(tz=LOCAL_TIME_ZONE)
                     post = HWSPost(title=post_title, body=post_body, author=post_author, trades=post_trades,
                                    url=post_url, created=post_created)
-                except:
+                except Exception as e:
+                    print('Fail to decode post title / Unkown error')
+                    print(f'Error Info: {e}')
+                    print(f'Link: {submission.url.strip()}')
                     continue
 
                 search_string = r'(http(s)?://)?(i.)?(imgur.com/gallery/[\w\d]{5,8}|imgur\.com/(a/)?[\w\d]{5,7}|ibb.co/.{5,7})'
@@ -96,7 +98,7 @@ while True:
                     post.timestamps.add(timestamp)
 
                 all_urls = re.finditer(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,'
-                                        r'}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|('
+                                       r'}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|('
                                        r'?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})',
                                        str(post.body))
 
@@ -114,9 +116,10 @@ while True:
                     r'( \$| shipped| local| plus|(\s)?\+|(\s)?obo| or| sold| for|(\s)?USD)*',  # match these keywords
                     re.IGNORECASE)
 
+                dfs = []
+                pricecolumnindex = 1
                 if '|' in post.body:  # | means we found a table
                     loader = ptr.MarkdownTableTextLoader(text=post.body)
-                    dfs = []
                     for table_data in loader.load():
                         df = table_data.as_dataframe()
                         dfs.append(df)
@@ -166,7 +169,7 @@ while True:
                               'listing:')
                         print(post.urls)
                     elif len(post.timestamps) == 1:
-                        print(str(post.timestamps[0]))
+                        print(str(list(post.timestamps)[0]))  # set of one element to list
                     else:
                         print(post.timestamps)
                 except:
@@ -175,7 +178,12 @@ while True:
                 print(f'Author Trades: {post.trades}')
                 print("Created at " + str(post.created)[11:-6])
 
-                notifier.notify(title=post.title, subtitle=post.price, message=post.body[:10], url=post.url)
+                ostype=notifier.os_type
+                notifier_path = notifier.notifier_path
+                if not notifier.disabled:
+                    notifier_thread = threading.Thread(target=SysNotifier.notify, args=(ostype, post.title, post.price,
+                                       post.body[:10], post.url, notifier_path,))
+                    notifier_thread.start()
                 if AUDIO_ALERT:
                     alert_thread = threading.Thread(target=alert)
                     alert_thread.start()  # Start audio thread to play in background
