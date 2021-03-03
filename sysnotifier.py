@@ -111,8 +111,8 @@ class SysNotifier:
     @staticmethod
     def notify(os_type, title, subtitle, message, url, notifier_path=None):
         if os_type == 1:
-            os.system(
-                f"""{notifier_path} -title '{title}' -subtitle '{subtitle}' -message '{message}' -open '{url}'""")
+            subprocess.Popen(
+                f"""{notifier_path} -title '{title}' -subtitle '{subtitle}' -message '{message}' -open '{url}'""", shell=True)
         elif os_type == 0:
             toaster = ToastNotifier()
             toaster.show_toast(title=title, msg=subtitle + " " + message,

@@ -9,7 +9,7 @@ import pytablereader as ptr
 from sysnotifier import *
 
 LOCAL_TIME_ZONE = datetime.datetime.now().astimezone().tzinfo
-AUDIO_ALERT = True
+AUDIO_ALERT = False
 
 
 class HWSPost:
@@ -54,8 +54,8 @@ reddit = praw.Reddit(client_id='oA7oqPSjXGLeAw',
 print('HWS Scraper Version 2020-12-10')
 
 while True:
+    notifier = SysNotifier()
     try:  # Praw might throw errors, we want to ignore them
-        notifier = SysNotifier()
         subreddit = reddit.subreddit('hardwareswap')
         for submission in subreddit.stream.submissions(skip_existing=True,
                                                        pause_after=0):  # REFRESH AND LOOK FOR NEW POSTS AND PROCESS THEM
@@ -180,6 +180,7 @@ while True:
 
                 ostype=notifier.os_type
                 notifier_path = notifier.notifier_path
+                notifier_thread = None
                 if not notifier.disabled:
                     notifier_thread = threading.Thread(target=SysNotifier.notify, args=(ostype, post.title, post.price,
                                        post.body[:10], post.url, notifier_path,))
