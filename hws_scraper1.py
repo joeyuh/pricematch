@@ -53,8 +53,8 @@ reddit = praw.Reddit(client_id='oA7oqPSjXGLeAw',
 
 print('HWS Scraper Version 2020-12-10')
 
+notifier = SysNotifier()
 while True:
-    notifier = SysNotifier()
     try:  # Praw might throw errors, we want to ignore them
         subreddit = reddit.subreddit('hardwareswap')
         for submission in subreddit.stream.submissions(skip_existing=True,
@@ -183,7 +183,7 @@ while True:
                 notifier_thread = None
                 if not notifier.disabled:
                     notifier_thread = threading.Thread(target=SysNotifier.notify, args=(ostype, post.title, post.price,
-                                       post.body[:10], post.url, notifier_path,))
+                                       re.sub(r"[^a-zA-Z0-9]+", ' ', post.body[:10]), post.url, notifier_path,))
                     notifier_thread.start()
                 if AUDIO_ALERT:
                     alert_thread = threading.Thread(target=alert)
@@ -193,3 +193,4 @@ while True:
                 print('')
     except Exception as e:
         print(f'Reddit Error: {e}\n Continuing')
+        time.sleep(2)
