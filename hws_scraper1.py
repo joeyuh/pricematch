@@ -45,11 +45,11 @@ def identifyprice(price_string):
 
 
 # I HAVE CREATED A NEW REDDIT ACCOUNT. USERNAME = 'pcbeest', PASSWORD = 'whataPassword'.
-reddit = praw.Reddit(client_id='oA7oqPSjXGLeAw',
-                     client_secret='rxQEH9FajvtDvr-PoxtjmEvxEKw',
-                     user_agent="hws_scrape",
-                     username='pcbeest',
-                     password='whataPassword')
+reddit = praw.Reddit(client_id='client_id',
+                     client_secret='client_secret',
+                     user_agent="user_agent",
+                     username='username',
+                     password='password')
 
 print('HWS Scraper Version 2020-12-10')
 
