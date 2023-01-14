@@ -32,11 +32,11 @@ def animation():
 # I HAVE CREATED A NEW REDDIT ACCOUNT. USERNAME = 'pcbeest', PASSWORD = 'whataPassword'.
 
 
-client_id = 'oA7oqPSjXGLeAw'
-client_secret = 'rxQEH9FajvtDvr-PoxtjmEvxEKw'
-user_agent = "hws_scrape"
-username = 'pcbeest'
-password = 'whataPassword'
+client_id = 'client_id'
+client_secret = 'client_secret'
+user_agent = "user_agent"
+username = 'username'
+password = 'password'
 
 reddit = praw.Reddit(client_id=client_id,
                      client_secret=client_secret,
